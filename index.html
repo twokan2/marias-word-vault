@@ -716,12 +716,13 @@ function initGame() {
   document.getElementById('hudTitle').textContent = puzzle.title||'Puzzle';
   buildGrid(rows,cols);
   buildCluePanel();
-  calcCellSize(rows,cols);
   state.timerStart = Date.now();
   clearInterval(state.timerInterval);
   state.timerInterval = setInterval(updateTimer, 1000);
   document.getElementById('hudScore').textContent = '0/'+( state.clues.across.length+state.clues.down.length);
   showScreen('screenGame');
+  // Must recalculate after screen is visible so clientWidth/Height are non-zero
+  requestAnimationFrame(()=>{ calcCellSize(rows,cols); });
   if (state.mode!=='solo' && state.roomRef) listenRoom();
   window.addEventListener('resize', ()=>calcCellSize(rows,cols));
 }
