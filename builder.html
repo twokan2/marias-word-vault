@@ -3,485 +3,351 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Puzzle Builder — Maria's Word Vault</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
+<title>Maria's Word Vault — Puzzle Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --ink: #1a1208;
-  --cream: #f5efe3;
+  --ink-soft: #3d3224;
+  --ink-faint: #6b5d4f;
   --paper: #faf7f2;
+  --paper-warm: #f5f0e8;
+  --paper-dim: #ebe5d9;
   --gold: #c9943a;
   --gold-light: #e8c97a;
   --gold-dim: #8a6420;
   --rust: #b84c2a;
   --sage: #4a7c5e;
-  --cell-size: 36px;
-  --font-display: 'Playfair Display', Georgia, serif;
-  --font-mono: 'DM Mono', monospace;
-  --font-body: 'DM Sans', sans-serif;
+  --sage-light: #d4e8dc;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+html { height: 100%; }
+
 body {
+  font-family: 'DM Sans', sans-serif;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-body);
-  min-height: 100vh;
+  min-height: 100%;
+  padding: 24px;
 }
 
 body::before {
   content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
   pointer-events: none;
-  z-index: 0;
-  opacity: 0.6;
+  z-index: 9999;
 }
 
-.builder-layout {
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  grid-template-rows: auto 1fr;
-  min-height: 100vh;
-  position: relative;
-  z-index: 1;
+.builder-container {
+  max-width: 640px;
+  margin: 0 auto;
 }
 
-/* Header */
 .builder-header {
-  grid-column: 1 / -1;
-  background: var(--ink);
-  color: var(--cream);
-  padding: 1rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  text-align: center;
+  margin-bottom: 32px;
 }
 
-.builder-header h1 {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--gold-light);
+.builder-rule {
+  width: 60px; height: 2px;
+  background: var(--gold);
+  margin: 0 auto 12px;
 }
 
-.builder-header p {
-  font-family: var(--font-mono);
+.builder-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.builder-subtitle {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+.builder-back {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 10px;
+}
+.builder-back:hover { color: var(--gold); }
+
+/* Form sections */
+.section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  border-bottom: 1px solid var(--paper-dim);
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+
+.form-input {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem; font-weight: 500;
+  padding: 10px 14px;
+  border: 2px solid var(--paper-dim);
+  border-radius: 2px;
+  background: white;
+  color: var(--ink);
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+.form-input:focus { border-color: var(--gold); }
+
+.form-label {
+  font-family: 'DM Mono', monospace;
   font-size: 0.65rem;
-  letter-spacing: 0.1em;
-  opacity: 0.6;
+  color: var(--ink-faint);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: block;
 }
 
-.hdr-btns { display: flex; gap: 0.5rem; align-items: center; }
+/* Word list */
+.word-entry {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: flex-start;
+}
+
+.word-entry input:first-child {
+  width: 140px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 1px;
+}
+
+.word-entry input:last-of-type {
+  flex: 1;
+}
+
+.word-entry button {
+  background: none;
+  border: 2px solid var(--paper-dim);
+  border-radius: 2px;
+  color: var(--rust);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 8px 10px;
+  flex-shrink: 0;
+}
+
+.btn {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
 
 .btn-gold {
   background: var(--gold);
-  color: var(--ink);
-  border: none;
-  border-radius: 2px;
-  padding: 0.6rem 1.2rem;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
+  color: white;
+  box-shadow: 0 2px 0 var(--gold-dim);
 }
-.btn-gold:hover { background: var(--gold-light); }
-.btn-gold:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-gold:active { transform: translateY(2px); box-shadow: none; }
 
-.btn-ghost {
-  background: rgba(255,255,255,0.1);
-  color: var(--cream);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 2px;
-  padding: 0.5rem 1rem;
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn-ghost:hover { background: rgba(255,255,255,0.2); }
-
-/* Left Panel */
-.left-panel {
-  background: white;
-  border-right: 1.5px solid rgba(201,148,58,0.2);
-  padding: 1.5rem;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+.btn-sage {
+  background: var(--sage);
+  color: white;
+  box-shadow: 0 2px 0 #375e46;
 }
 
-.panel-section h3 {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--gold-dim);
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid rgba(201,148,58,0.2);
+.btn-outline {
+  background: transparent;
+  color: var(--ink-faint);
+  border: 2px solid var(--paper-dim);
 }
 
-label {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gold-dim);
-  margin-bottom: 0.3rem;
-}
-
-input[type="text"], textarea {
-  width: 100%;
-  background: var(--paper);
-  border: 1.5px solid rgba(201,148,58,0.3);
-  border-radius: 2px;
-  padding: 0.55rem 0.7rem;
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  color: var(--ink);
-  outline: none;
-  transition: border-color 0.2s;
-}
-input:focus, textarea:focus { border-color: var(--gold); }
-
-textarea { resize: vertical; min-height: 60px; }
-
-.word-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.btn-add {
-  width: 100%;
-  background: var(--ink);
-  color: var(--gold-light);
-  border: none;
-  border-radius: 2px;
-  padding: 0.6rem;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 0.5rem;
-}
-.btn-add:hover { background: #2d2010; }
-
-.word-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.word-item {
-  display: flex;
-  gap: 0.5rem;
-  align-items: flex-start;
-  padding: 0.6rem 0.7rem;
-  border: 1px solid rgba(201,148,58,0.2);
-  border-radius: 2px;
-  background: var(--paper);
-  animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-
-.word-item .wi-word {
-  font-family: var(--font-mono);
+.btn-small {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
   font-weight: 500;
-  font-size: 0.85rem;
-  letter-spacing: 0.05em;
-  color: var(--gold-dim);
-  min-width: 70px;
-  text-transform: uppercase;
+  padding: 6px 12px;
 }
 
-.word-item .wi-clue {
-  font-size: 0.82rem;
-  flex: 1;
-  line-height: 1.3;
-  color: #444;
+.button-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
 }
 
-.word-item .wi-delete {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #ccc;
-  font-size: 1rem;
-  padding: 0;
-  transition: color 0.15s;
-  flex-shrink: 0;
-}
-.word-item .wi-delete:hover { color: var(--rust); }
-
-.status-bar {
-  padding: 0.6rem 0.8rem;
-  border-radius: 2px;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  text-align: center;
-}
-.status-bar.info { background: rgba(201,148,58,0.1); color: var(--gold-dim); }
-.status-bar.success { background: rgba(74,124,94,0.1); color: var(--sage); }
-.status-bar.error { background: rgba(184,76,42,0.1); color: var(--rust); }
-.status-bar.hidden { display: none; }
-
-/* Preset words */
-.preset-tags {
+/* Quick-add presets */
+.preset-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 6px;
+  margin-top: 8px;
 }
 
-.preset-tag {
-  background: var(--paper);
-  border: 1px solid rgba(201,148,58,0.3);
+.preset-chip {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  padding: 4px 10px;
+  border: 1px solid var(--paper-dim);
   border-radius: 2px;
-  padding: 0.25rem 0.6rem;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
+  background: white;
+  color: var(--ink-faint);
   cursor: pointer;
   transition: all 0.15s;
 }
-.preset-tag:hover { background: var(--ink); color: var(--gold-light); border-color: var(--ink); }
-
-/* Right Panel - Preview */
-.right-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 2rem;
-  overflow: auto;
-  background: var(--paper);
-}
-
-.preview-label {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--gold-dim);
-  margin-bottom: 1rem;
-  text-align: center;
-}
-
-.crossword-preview {
-  display: inline-grid;
-  border: 2px solid var(--ink);
-  box-shadow: 4px 4px 0 var(--ink);
-}
-
-.pcell {
-  width: var(--cell-size);
-  height: var(--cell-size);
-  border: 1px solid #ddd;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.pcell.black { background: var(--ink); }
-.pcell.white { background: white; }
-
-.pcell-num {
-  position: absolute;
-  top: 1px; left: 2px;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  line-height: 1;
-  color: #666;
-}
-
-.pcell-letter {
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 700;
+.preset-chip:hover {
+  border-color: var(--gold);
   color: var(--ink);
 }
 
-.preview-clues {
-  margin-top: 1.5rem;
-  width: 100%;
-  max-width: 500px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-.pc-section h4 {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--gold-dim);
-  margin-bottom: 0.6rem;
-}
-
-.pc-clue {
-  display: flex;
-  gap: 0.4rem;
-  margin-bottom: 0.4rem;
-  font-size: 0.82rem;
-  line-height: 1.35;
-}
-
-.pc-num {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--gold-dim);
-  font-weight: 500;
-  min-width: 18px;
-  padding-top: 1px;
-}
-
-.empty-preview {
+/* Preview grid */
+.preview-area {
+  margin-top: 16px;
   text-align: center;
-  padding: 3rem;
-  opacity: 0.4;
 }
 
-.empty-preview .ep-icon { font-size: 3rem; margin-bottom: 0.75rem; }
-.empty-preview p { font-size: 0.85rem; line-height: 1.5; }
+.preview-grid {
+  display: inline-grid;
+  gap: 0;
+  border: 2px solid var(--ink);
+}
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(201,148,58,0.3); border-radius: 2px; }
+.preview-cell {
+  width: 32px; height: 32px;
+  border: 0.5px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--ink);
+  position: relative;
+}
+
+.preview-cell.black {
+  background: var(--ink);
+}
+
+.preview-cell .pnum {
+  position: absolute;
+  top: 1px; left: 2px;
+  font-size: 0.45rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+}
+
+/* Status messages */
+.status {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 2px;
+}
+.status-success { background: var(--sage-light); color: var(--sage); }
+.status-error { background: #fde8e4; color: var(--rust); }
+.status-info { background: #e8f0fa; color: #4a6d8c; }
 </style>
 </head>
 <body>
-
-<div class="builder-layout">
-
-  <!-- HEADER -->
+<div class="builder-container">
   <div class="builder-header">
-    <div>
-      <h1>✏️ Puzzle Builder</h1>
-      <p>Maria's Word Vault — Create custom family crosswords</p>
+    <div class="builder-rule"></div>
+    <div class="builder-title" style="font-family:'Playfair Display',serif">Puzzle Builder</div>
+    <div class="builder-subtitle">Maria's Word Vault</div>
+    <a href="index.html" class="builder-back">← Back to Game</a>
+  </div>
+
+  <!-- Puzzle Name -->
+  <div class="section">
+    <div class="section-title">Puzzle Title</div>
+    <input type="text" id="puzzleTitle" class="form-input" placeholder="e.g., Family Favorites" maxlength="60">
+  </div>
+
+  <!-- Word List -->
+  <div class="section">
+    <div class="section-title">Words & Clues</div>
+    <div id="wordList"></div>
+    <div class="button-row">
+      <button class="btn btn-outline btn-small" onclick="addWordRow()">+ Add Word</button>
     </div>
-    <div class="hdr-btns">
-      <button class="btn-ghost" onclick="exportPuzzle()">⬇ Export JSON</button>
-      <button class="btn-gold" id="saveBtn" onclick="savePuzzle()">Save to Cloud ☁</button>
-      <a href="index.html" class="btn-ghost" style="text-decoration:none">← Back to Game</a>
+
+    <div class="section-title" style="margin-top:16px">Quick Add — Family Presets</div>
+    <div class="preset-chips">
+      <button class="preset-chip" onclick="addPreset('BAOBAO','Our beloved first pup')">🐕 Bao Bao</button>
+      <button class="preset-chip" onclick="addPreset('ROXI','Our pittie princess')">🐕‍🦺 Roxi</button>
+      <button class="preset-chip" onclick="addPreset('BATMAN','The Dark Knight')">🦇 Batman</button>
+      <button class="preset-chip" onclick="addPreset('BRUCE','Mr. Wayne himself')">🎭 Bruce</button>
+      <button class="preset-chip" onclick="addPreset('JEEP','Wrangler ride')">🚙 Jeep</button>
+      <button class="preset-chip" onclick="addPreset('WRANGLER','Terencio\'s ride')">🏔️ Wrangler</button>
+      <button class="preset-chip" onclick="addPreset('SXSW','Austin festival')">🎸 SXSW</button>
+      <button class="preset-chip" onclick="addPreset('AUSTIN','Texas capital, our city')">🤠 Austin</button>
+      <button class="preset-chip" onclick="addPreset('AMAZON','Former employer, the everything store')">📦 Amazon</button>
+      <button class="preset-chip" onclick="addPreset('LYFT','Former gig, rideshare company')">🚗 Lyft</button>
+      <button class="preset-chip" onclick="addPreset('MARIA','Mom, the queen')">👑 Maria</button>
+      <button class="preset-chip" onclick="addPreset('DC','District of Columbia, home base')">🏛️ DC</button>
+      <button class="preset-chip" onclick="addPreset('ERRANT','Knight without a kingdom')">⚔️ Errant</button>
+      <button class="preset-chip" onclick="addPreset('CONGRESS','Famous bat bridge in ATX')">🌉 Congress</button>
     </div>
   </div>
 
-  <!-- LEFT: INPUTS -->
-  <div class="left-panel">
-
-    <!-- Puzzle info -->
-    <div class="panel-section">
-      <h3>Puzzle Info</h3>
-      <div style="margin-bottom:0.75rem">
-        <label>Puzzle title</label>
-        <input type="text" id="puzzleTitle" placeholder="e.g. Mom's Birthday Special" maxlength="50">
-      </div>
-      <div>
-        <label>Description (optional)</label>
-        <input type="text" id="puzzleDesc" placeholder="e.g. All about our family!" maxlength="100">
-      </div>
-    </div>
-
-    <!-- Add a word -->
-    <div class="panel-section">
-      <h3>Add a Word + Clue</h3>
-      <div class="word-row">
-        <div>
-          <label>Word</label>
-          <input type="text" id="newWord" placeholder="BAOBAO" maxlength="20" style="text-transform:uppercase"
-            onkeydown="if(event.key==='Enter') addWord()">
-        </div>
-        <div>
-          <label>Difficulty</label>
-          <select id="wordDifficulty" style="width:100%; padding:0.55rem 0.7rem; background:var(--paper); border:1.5px solid rgba(201,148,58,0.3); border-radius:2px; font-family:var(--font-mono); font-size:0.85rem; outline:none; color:var(--ink)">
-            <option value="easy">Easy</option>
-            <option value="medium" selected>Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-        </div>
-      </div>
-      <div style="margin-bottom:0.5rem">
-        <label>Clue</label>
-        <textarea id="newClue" placeholder="e.g. Our fluffy Shih Tzu" rows="2"
-          onkeydown="if(event.key==='Enter' && event.metaKey) addWord()"></textarea>
-      </div>
-      <button class="btn-add" onclick="addWord()">+ Add Word</button>
-    </div>
-
-    <!-- Quick add family presets -->
-    <div class="panel-section">
-      <h3>Quick Add Family Words</h3>
-      <div class="preset-tags" id="presetTags"></div>
-    </div>
-
-    <!-- Word list -->
-    <div class="panel-section">
-      <h3>Words in Puzzle (<span id="wordCount">0</span>)</h3>
-      <div class="word-list" id="wordList">
-        <div style="text-align:center;font-size:0.8rem;opacity:0.4;padding:0.75rem">
-          Add words above to build your puzzle
-        </div>
-      </div>
-    </div>
-
-    <div id="statusBar" class="status-bar hidden"></div>
-
-    <!-- Generate grid controls -->
-    <div class="panel-section">
-      <h3>Grid Settings</h3>
-      <div class="word-row">
-        <div>
-          <label>Max grid size</label>
-          <select id="gridSize" style="width:100%; padding:0.55rem 0.7rem; background:var(--paper); border:1.5px solid rgba(201,148,58,0.3); border-radius:2px; font-family:var(--font-mono); font-size:0.85rem; outline:none; color:var(--ink)">
-            <option value="10">10 × 10</option>
-            <option value="13" selected>13 × 13</option>
-            <option value="15">15 × 15</option>
-          </select>
-        </div>
-        <div>
-          <label>Symmetry</label>
-          <select id="symmetry" style="width:100%; padding:0.55rem 0.7rem; background:var(--paper); border:1.5px solid rgba(201,148,58,0.3); border-radius:2px; font-family:var(--font-mono); font-size:0.85rem; outline:none; color:var(--ink)">
-            <option value="none">None</option>
-            <option value="rotational" selected>Rotational</option>
-          </select>
-        </div>
-      </div>
-      <button class="btn-add" onclick="generateGrid()">🔄 Generate Preview</button>
-    </div>
-
-  </div>
-
-  <!-- RIGHT: PREVIEW -->
-  <div class="right-panel" id="rightPanel">
-    <div class="empty-preview" id="emptyPreview">
-      <div class="ep-icon">🧩</div>
-      <p>Add at least 3 words and<br>click <strong>Generate Preview</strong><br>to see your puzzle</p>
+  <!-- Grid Size -->
+  <div class="section">
+    <div class="section-title">Grid Size</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="number" id="gridSize" class="form-input" value="9" min="5" max="15" style="width:80px">
+      <span style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--ink-faint)">× grid (5-15)</span>
     </div>
   </div>
 
+  <!-- Actions -->
+  <div class="section">
+    <div class="button-row">
+      <button class="btn btn-gold" onclick="generatePreview()">🔨 Build Crossword</button>
+      <button class="btn btn-sage" onclick="savePuzzle()" id="btnSave" style="display:none">💾 Save to Vault</button>
+      <button class="btn btn-outline btn-small" onclick="exportJSON()" id="btnExport" style="display:none">📋 Export JSON</button>
+    </div>
+    <div id="statusMsg"></div>
+  </div>
+
+  <!-- Preview -->
+  <div class="section">
+    <div class="section-title">Preview</div>
+    <div class="preview-area" id="previewArea">
+      <div style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--ink-faint)">Add words and click "Build Crossword" to see your puzzle</div>
+    </div>
+    <div id="previewClues"></div>
+  </div>
 </div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
-// ===== FIREBASE CONFIG =====
-// 🔧 REPLACE with your Firebase config (same as index.html)
 const firebaseConfig = {
   apiKey: "AIzaSyDkqQsKeNwL4qL5e-J1P5S3UE1puzcOaC0",
   authDomain: "marias-word-vault.firebaseapp.com",
@@ -495,458 +361,334 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ===== STATE =====
-let words = []; // [{word, clue, difficulty}]
-let currentGrid = null;
-let currentClues = null;
+let builtPuzzle = null;
 
-// Family presets — customize these!
-const FAMILY_PRESETS = [
-  { word: 'BAOBAO', clue: 'Our lovable Pitbull' },
-  { word: 'ROXI', clue: 'Our other Pitbull baby' },
-  { word: 'JEEP', clue: 'Dad\'s ride of choice' },
-  { word: 'WRANGLER', clue: 'Type of Jeep we drive' },
-  { word: 'AUSTIN', clue: 'City of SXSW' },
-  { word: 'SXSW', clue: 'Music and tech festival in ATX' },
-  { word: 'TEXAS', clue: 'Our home state' },
-  { word: 'AMAZON', clue: 'Where dad used to work' },
-  { word: 'LYFT', clue: 'Another company on Dad\'s resume' },
-  { word: 'BRUCE', clue: 'Batman\'s real name' },
-  { word: 'BATMAN', clue: 'The Dark Knight' },
-  { word: 'DC', clue: 'Nation\'s capital' },
-  { word: 'SPANISH', clue: 'Language we\'re learning' },
-  { word: 'CROSSWORD', clue: 'This very puzzle!' },
-  { word: 'FAMILY', clue: 'Most important thing' },
-];
-
-// Render preset tags
-document.getElementById('presetTags').innerHTML = FAMILY_PRESETS.map(p =>
-  `<div class="preset-tag" onclick="usePreset('${p.word}', \`${p.clue}\`)">${p.word}</div>`
-).join('');
-
-function usePreset(word, clue) {
-  document.getElementById('newWord').value = word;
-  document.getElementById('newClue').value = clue;
-  document.getElementById('newWord').focus();
+// Initialize with 3 empty word rows
+function init() {
+  for (let i = 0; i < 3; i++) addWordRow();
 }
 
-// ===== WORD MANAGEMENT =====
-function addWord() {
-  const word = document.getElementById('newWord').value.trim().toUpperCase().replace(/\s/g,'');
-  const clue = document.getElementById('newClue').value.trim();
-  const difficulty = document.getElementById('wordDifficulty').value;
-
-  if (!word) { showStatus('Enter a word', 'error'); return; }
-  if (!clue) { showStatus('Enter a clue for the word', 'error'); return; }
-  if (word.length < 2) { showStatus('Word must be at least 2 letters', 'error'); return; }
-  if (!/^[A-Z]+$/.test(word)) { showStatus('Word can only contain letters A-Z', 'error'); return; }
-  if (words.find(w => w.word === word)) { showStatus('That word is already in the list', 'error'); return; }
-  if (words.length >= 30) { showStatus('Max 30 words per puzzle', 'error'); return; }
-
-  words.push({ word, clue, difficulty });
-  document.getElementById('newWord').value = '';
-  document.getElementById('newClue').value = '';
-  renderWordList();
-  showStatus(`"${word}" added!`, 'success');
-}
-
-function removeWord(idx) {
-  words.splice(idx, 1);
-  renderWordList();
-  currentGrid = null;
-}
-
-function renderWordList() {
+function addWordRow(word = '', clue = '') {
   const list = document.getElementById('wordList');
-  document.getElementById('wordCount').textContent = words.length;
-
-  if (words.length === 0) {
-    list.innerHTML = '<div style="text-align:center;font-size:0.8rem;opacity:0.4;padding:0.75rem">No words yet</div>';
-    return;
-  }
-
-  list.innerHTML = words.map((w, i) => `
-    <div class="word-item">
-      <div class="wi-word">${w.word}</div>
-      <div class="wi-clue">${w.clue}</div>
-      <button class="wi-delete" onclick="removeWord(${i})" title="Remove">✕</button>
-    </div>
-  `).join('');
+  const row = document.createElement('div');
+  row.className = 'word-entry';
+  row.innerHTML = `
+    <input type="text" class="form-input" placeholder="WORD" value="${word}" maxlength="15" style="text-transform:uppercase;font-family:'DM Mono',monospace;letter-spacing:1px;width:140px">
+    <input type="text" class="form-input" placeholder="Clue for this word..." value="${clue}">
+    <button onclick="this.parentElement.remove()">✕</button>
+  `;
+  list.appendChild(row);
 }
 
-// ===== CROSSWORD GRID GENERATOR =====
-// A proper backtracking crossword layout algorithm
+function addPreset(word, clue) {
+  addWordRow(word, clue);
+}
 
-function generateGrid() {
-  if (words.length < 2) {
-    showStatus('Add at least 2 words to generate a grid', 'error');
-    return;
-  }
-
-  const maxSize = parseInt(document.getElementById('gridSize').value);
-  showStatus('Generating grid...', 'info');
-
-  setTimeout(() => {
-    const result = buildCrosswordLayout(words.map(w => w.word), maxSize);
-    if (!result) {
-      showStatus('Could not fit all words — try fewer words or larger grid', 'error');
-      return;
+function getWordList() {
+  const rows = document.querySelectorAll('.word-entry');
+  const words = [];
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const word = inputs[0].value.trim().toUpperCase().replace(/[^A-Z]/g, '');
+    const clue = inputs[1].value.trim();
+    if (word.length >= 2 && clue) {
+      words.push({ word, clue });
     }
-    currentGrid = result;
-    currentClues = buildClues(result, words);
-    renderPreview(result, currentClues);
-    showStatus(`Grid generated! ${result.placedWords.length} words placed`, 'success');
-  }, 50);
+  });
+  return words;
 }
+
+/* ═══════════ CROSSWORD LAYOUT ENGINE ═══════════ */
 
 function buildCrosswordLayout(wordList, maxSize) {
-  // Sort: longest words first
-  const sorted = [...wordList].sort((a, b) => b.length - a.length);
+  if (wordList.length === 0) return null;
 
-  let placements = []; // [{word, row, col, dir}]
-  let grid = Array.from({ length: maxSize }, () => Array(maxSize).fill(null));
+  // Sort by length descending
+  const sorted = [...wordList].sort((a, b) => b.word.length - a.word.length);
+  const grid = Array.from({ length: maxSize }, () => Array(maxSize).fill(null));
+  const placed = [];
 
-  // Place first word horizontally in center
-  const firstWord = sorted[0];
-  const startCol = Math.floor((maxSize - firstWord.length) / 2);
+  // Place first word horizontally in the middle
+  const first = sorted[0];
   const startRow = Math.floor(maxSize / 2);
+  const startCol = Math.floor((maxSize - first.word.length) / 2);
 
-  placeWord(grid, firstWord, startRow, startCol, 'across');
-  placements.push({ word: firstWord, row: startRow, col: startCol, dir: 'across' });
+  if (startCol < 0 || startCol + first.word.length > maxSize) {
+    return null;
+  }
+
+  for (let i = 0; i < first.word.length; i++) {
+    grid[startRow][startCol + i] = first.word[i];
+  }
+
+  placed.push({
+    word: first.word,
+    clue: first.clue,
+    row: startRow,
+    col: startCol,
+    dir: 'across'
+  });
 
   // Try to place remaining words
   for (let wi = 1; wi < sorted.length; wi++) {
-    const word = sorted[wi];
-    let placed = false;
+    const entry = sorted[wi];
+    let bestPlacement = null;
+    let bestScore = -1;
 
-    // Try to intersect with already placed words
-    const shuffledPlacements = [...placements].sort(() => Math.random() - 0.5);
-    
-    for (const existing of shuffledPlacements) {
-      if (placed) break;
-      
-      // Find common letters between existing word and new word
-      for (let ei = 0; ei < existing.word.length && !placed; ei++) {
-        for (let wi2 = 0; wi2 < word.length && !placed; wi2++) {
-          if (existing.word[ei] !== word[wi2]) continue;
+    // For each placed word, find intersections
+    for (const p of placed) {
+      for (let pi = 0; pi < p.word.length; pi++) {
+        for (let ei = 0; ei < entry.word.length; ei++) {
+          if (p.word[pi] !== entry.word[ei]) continue;
 
-          // Try perpendicular placement
-          let row, col, dir;
-          if (existing.dir === 'across') {
-            // New word goes down, intersecting at (existing.row, existing.col+ei)
-            row = existing.row - wi2;
-            col = existing.col + ei;
-            dir = 'down';
+          // Calculate position
+          const newDir = p.dir === 'across' ? 'down' : 'across';
+          let newRow, newCol;
+
+          if (newDir === 'down') {
+            newRow = p.row - ei;
+            newCol = p.dir === 'across' ? p.col + pi : p.col;
           } else {
-            // New word goes across, intersecting at (existing.row+ei, existing.col)
-            row = existing.row + ei;
-            col = existing.col - wi2;
-            dir = 'across';
+            newRow = p.dir === 'down' ? p.row + pi : p.row;
+            newCol = p.col - ei;
           }
 
-          if (canPlace(grid, word, row, col, dir, maxSize)) {
-            placeWord(grid, word, row, col, dir);
-            placements.push({ word, row, col, dir });
-            placed = true;
-          }
-        }
-      }
-    }
+          // Check bounds
+          if (newRow < 0 || newCol < 0) continue;
+          if (newDir === 'across' && newCol + entry.word.length > maxSize) continue;
+          if (newDir === 'down' && newRow + entry.word.length > maxSize) continue;
 
-    if (!placed) {
-      // Try placing anywhere valid (fallback — may not intersect)
-      for (let r = 0; r < maxSize && !placed; r++) {
-        for (let c = 0; c < maxSize && !placed; c++) {
-          for (const dir of ['across', 'down']) {
-            if (canPlace(grid, word, r, c, dir, maxSize)) {
-              // Only place if adjacent to existing grid content
-              if (isAdjacentToContent(grid, word, r, c, dir, maxSize)) {
-                placeWord(grid, word, r, c, dir);
-                placements.push({ word, row:r, col:c, dir });
-                placed = true;
-                break;
-              }
+          // Check if placement is valid
+          if (canPlace(grid, entry.word, newRow, newCol, newDir, maxSize)) {
+            const score = scoreIntersections(grid, entry.word, newRow, newCol, newDir);
+            if (score > bestScore) {
+              bestScore = score;
+              bestPlacement = { word: entry.word, clue: entry.clue, row: newRow, col: newCol, dir: newDir };
             }
           }
         }
       }
     }
+
+    if (bestPlacement) {
+      // Place it
+      for (let i = 0; i < bestPlacement.word.length; i++) {
+        const r = bestPlacement.dir === 'across' ? bestPlacement.row : bestPlacement.row + i;
+        const c = bestPlacement.dir === 'across' ? bestPlacement.col + i : bestPlacement.col;
+        grid[r][c] = bestPlacement.word[i];
+      }
+      placed.push(bestPlacement);
+    }
   }
 
-  // Trim grid to content
-  const trimmed = trimGrid(grid, maxSize);
-  
+  if (placed.length < 2) return null;
+
+  // Assign clue numbers
+  const numberMap = {};
+  let num = 1;
+  for (let r = 0; r < maxSize; r++) {
+    for (let c = 0; c < maxSize; c++) {
+      if (grid[r][c] === null) continue;
+      const needsNumber = placed.some(p => p.row === r && p.col === c);
+      if (needsNumber && !numberMap[`${r}_${c}`]) {
+        numberMap[`${r}_${c}`] = num++;
+      }
+    }
+  }
+
+  // Build final data
+  const gridData = grid.map(row => row.map(cell => cell || '#'));
+  const across = [];
+  const down = [];
+  const answers = {};
+
+  for (const p of placed) {
+    const key = `${p.row}_${p.col}`;
+    const clueNum = numberMap[key] || 1;
+    const clueObj = {
+      number: clueNum,
+      clue: p.clue,
+      answer: p.word,
+      row: p.row,
+      col: p.col,
+      dir: p.dir
+    };
+    if (p.dir === 'across') {
+      across.push(clueObj);
+    } else {
+      down.push(clueObj);
+    }
+    answers[`${p.dir}_${clueNum}`] = p.word;
+  }
+
+  across.sort((a, b) => a.number - b.number);
+  down.sort((a, b) => a.number - b.number);
+
   return {
-    grid: trimmed.grid,
-    rows: trimmed.rows,
-    cols: trimmed.cols,
-    offsetRow: trimmed.offsetRow,
-    offsetCol: trimmed.offsetCol,
-    placedWords: placements.map(p => ({
-      ...p,
-      row: p.row - trimmed.offsetRow,
-      col: p.col - trimmed.offsetCol,
-    })),
+    source: 'custom',
+    title: document.getElementById('puzzleTitle').value.trim() || 'Family Puzzle',
+    gridData,
+    clues: { across, down },
+    answers,
+    placed: placed.length,
+    total: sorted.length
   };
 }
 
 function canPlace(grid, word, row, col, dir, maxSize) {
-  if (row < 0 || col < 0) return false;
-  const endRow = dir === 'down' ? row + word.length - 1 : row;
-  const endCol = dir === 'across' ? col + word.length - 1 : col;
-  if (endRow >= maxSize || endCol >= maxSize) return false;
-
-  // Check before start
-  const br = dir === 'down' ? row - 1 : row;
-  const bc = dir === 'across' ? col - 1 : col;
-  if (br >= 0 && bc >= 0 && grid[br][bc] !== null) return false;
-
-  // Check after end
-  const ar = dir === 'down' ? endRow + 1 : endRow;
-  const ac = dir === 'across' ? endCol + 1 : endCol;
-  if (ar < maxSize && ac < maxSize && grid[ar][ac] !== null) return false;
+  // Check cell before word start (must be empty or out of bounds)
+  if (dir === 'across') {
+    if (col > 0 && grid[row][col - 1] !== null) return false;
+    if (col + word.length < maxSize && grid[row][col + word.length] !== null) return false;
+  } else {
+    if (row > 0 && grid[row - 1][col] !== null) return false;
+    if (row + word.length < maxSize && grid[row + word.length][col] !== null) return false;
+  }
 
   for (let i = 0; i < word.length; i++) {
-    const r = dir === 'down' ? row + i : row;
+    const r = dir === 'across' ? row : row + i;
     const c = dir === 'across' ? col + i : col;
+
+    if (r >= maxSize || c >= maxSize) return false;
+
     const existing = grid[r][c];
-    
-    if (existing === null) {
-      // Check perpendicular adjacency (no touching parallel words)
-      const pr = dir === 'across' ? r - 1 : r;
-      const pc = dir === 'down' ? c - 1 : c;
-      const pr2 = dir === 'across' ? r + 1 : r;
-      const pc2 = dir === 'down' ? c + 1 : c;
-      if ((pr >= 0 && grid[pr][pc] !== null) || (pr2 < maxSize && grid[pr2][pc2] !== null)) return false;
-    } else if (existing !== word[i]) {
-      return false; // Conflict
+
+    if (existing !== null) {
+      // Must match
+      if (existing !== word[i]) return false;
+    } else {
+      // Check adjacency — no parallel touching
+      if (dir === 'across') {
+        if (r > 0 && grid[r - 1][c] !== null) return false;
+        if (r < maxSize - 1 && grid[r + 1][c] !== null) return false;
+      } else {
+        if (c > 0 && grid[r][c - 1] !== null) return false;
+        if (c < maxSize - 1 && grid[r][c + 1] !== null) return false;
+      }
     }
   }
+
   return true;
 }
 
-function placeWord(grid, word, row, col, dir) {
+function scoreIntersections(grid, word, row, col, dir) {
+  let score = 0;
   for (let i = 0; i < word.length; i++) {
-    const r = dir === 'down' ? row + i : row;
+    const r = dir === 'across' ? row : row + i;
     const c = dir === 'across' ? col + i : col;
-    grid[r][c] = word[i];
+    if (grid[r][c] === word[i]) score += 2;
   }
+  return score;
 }
 
-function isAdjacentToContent(grid, word, row, col, dir, maxSize) {
-  for (let i = 0; i < word.length; i++) {
-    const r = dir === 'down' ? row + i : row;
-    const c = dir === 'across' ? col + i : col;
-    const neighbors = [
-      [r-1,c],[r+1,c],[r,c-1],[r,c+1]
-    ];
-    for (const [nr,nc] of neighbors) {
-      if (nr>=0&&nr<maxSize&&nc>=0&&nc<maxSize&&grid[nr][nc]!==null) return true;
-    }
-  }
-  return false;
-}
+/* ═══════════ PREVIEW ═══════════ */
 
-function trimGrid(grid, maxSize) {
-  let minR = maxSize, maxR = 0, minC = maxSize, maxC = 0;
-  for (let r = 0; r < maxSize; r++) {
-    for (let c = 0; c < maxSize; c++) {
-      if (grid[r][c] !== null) {
-        minR = Math.min(minR, r);
-        maxR = Math.max(maxR, r);
-        minC = Math.min(minC, c);
-        maxC = Math.max(maxC, c);
+function generatePreview() {
+  const words = getWordList();
+  if (words.length < 2) {
+    showStatus('Need at least 2 words with clues', 'error');
+    return;
+  }
+
+  const size = parseInt(document.getElementById('gridSize').value) || 9;
+  const puzzle = buildCrosswordLayout(words, size);
+
+  if (!puzzle) {
+    showStatus('Could not build a crossword — try different words or a larger grid', 'error');
+    return;
+  }
+
+  builtPuzzle = puzzle;
+
+  // Render preview grid
+  const area = document.getElementById('previewArea');
+  area.innerHTML = '';
+
+  const gridDiv = document.createElement('div');
+  gridDiv.className = 'preview-grid';
+  gridDiv.style.gridTemplateColumns = `repeat(${size}, 32px)`;
+
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'preview-cell';
+      if (puzzle.gridData[r][c] === '#') {
+        cell.classList.add('black');
+      } else {
+        cell.textContent = puzzle.gridData[r][c];
+        // Check for number
+        const hasNum = [...puzzle.clues.across, ...puzzle.clues.down].find(cl => cl.row === r && cl.col === c);
+        if (hasNum) {
+          const numSpan = document.createElement('span');
+          numSpan.className = 'pnum';
+          numSpan.textContent = hasNum.number;
+          cell.appendChild(numSpan);
+        }
       }
+      gridDiv.appendChild(cell);
     }
   }
-  // Add 1-cell padding
-  minR = Math.max(0, minR - 1);
-  minC = Math.max(0, minC - 1);
-  maxR = Math.min(maxSize-1, maxR + 1);
-  maxC = Math.min(maxSize-1, maxC + 1);
+  area.appendChild(gridDiv);
 
-  const rows = maxR - minR + 1;
-  const cols = maxC - minC + 1;
-  const trimmedGrid = [];
+  // Render clues
+  const clueDiv = document.getElementById('previewClues');
+  clueDiv.innerHTML = '';
 
-  for (let r = minR; r <= maxR; r++) {
-    const row = [];
-    for (let c = minC; c <= maxC; c++) {
-      row.push(grid[r][c] === null ? '#' : grid[r][c]);
+  const makeList = (title, clues) => {
+    if (clues.length === 0) return '';
+    let html = `<div class="section-title" style="margin-top:12px">${title}</div>`;
+    for (const cl of clues) {
+      html += `<div style="font-size:0.8rem;padding:3px 0;color:var(--ink-soft)"><strong style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--gold-dim)">${cl.number}.</strong> ${cl.clue} <span style="color:var(--ink-faint);font-size:0.7rem">(${cl.answer.length})</span></div>`;
     }
-    trimmedGrid.push(row);
-  }
-
-  return { grid: trimmedGrid, rows, cols, offsetRow: minR, offsetCol: minC };
-}
-
-function buildClues(layout, wordDefs) {
-  const { placedWords } = layout;
-
-  // Assign numbers: scan top-to-bottom, left-to-right, number cells that start an across or down word
-  const numberedCells = {};
-  const cellNums = {};
-  let num = 1;
-
-  // Find all word starts
-  const wordStarts = placedWords.map(p => `${p.row},${p.col}`);
-  const uniqueStarts = [...new Set(wordStarts)];
-
-  // Sort starts top-left to bottom-right
-  uniqueStarts.sort((a, b) => {
-    const [ar, ac] = a.split(',').map(Number);
-    const [br, bc] = b.split(',').map(Number);
-    return ar !== br ? ar - br : ac - bc;
-  });
-
-  // Assign clue numbers to all starts
-  uniqueStarts.forEach(key => {
-    cellNums[key] = num++;
-  });
-
-  const clues = { across: [], down: [] };
-
-  placedWords.forEach(p => {
-    const key = `${p.row},${p.col}`;
-    const number = cellNums[key];
-    const wordDef = wordDefs.find(w => w.word === p.word);
-    clues[p.dir].push({
-      number,
-      clue: wordDef?.clue || `${p.word.length}-letter word`,
-      answer: p.word,
-      row: p.row,
-      col: p.col,
-      dir: p.dir,
-    });
-  });
-
-  clues.across.sort((a,b) => a.number - b.number);
-  clues.down.sort((a,b) => a.number - b.number);
-
-  return { clues, cellNums };
-}
-
-// ===== PREVIEW RENDERING =====
-function renderPreview(layout, clueData) {
-  const panel = document.getElementById('rightPanel');
-  const { grid, rows, cols, placedWords } = layout;
-  const { clues, cellNums } = clueData;
-
-  let html = `<div class="preview-label">${document.getElementById('puzzleTitle').value || 'Preview'} — ${placedWords.length} words</div>`;
-  
-  html += `<div class="crossword-preview" style="grid-template-columns: repeat(${cols}, var(--cell-size)); grid-template-rows: repeat(${rows}, var(--cell-size)); display:inline-grid;">`;
-  
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const raw = grid[r][c];
-      const isBlack = (raw === '#' || raw === null);
-      const num = cellNums[`${r},${c}`];
-      html += `<div class="pcell ${isBlack ? 'black' : 'white'}">`;
-      if (!isBlack) {
-        if (num) html += `<div class="pcell-num">${num}</div>`;
-        html += `<div class="pcell-letter">${raw || ''}</div>`;
-      }
-      html += '</div>';
-    }
-  }
-  html += '</div>';
-
-  // Clue list
-  html += '<div class="preview-clues">';
-  
-  if (clues.across.length) {
-    html += '<div class="pc-section"><h4>Across</h4>';
-    clues.across.forEach(c => {
-      html += `<div class="pc-clue"><span class="pc-num">${c.number}</span><span>${c.clue}</span></div>`;
-    });
-    html += '</div>';
-  }
-
-  if (clues.down.length) {
-    html += '<div class="pc-section"><h4>Down</h4>';
-    clues.down.forEach(c => {
-      html += `<div class="pc-clue"><span class="pc-num">${c.number}</span><span>${c.clue}</span></div>`;
-    });
-    html += '</div>';
-  }
-
-  html += '</div>';
-  panel.innerHTML = html;
-}
-
-// ===== SAVE / EXPORT =====
-function buildPuzzleObject() {
-  if (!currentGrid || !currentClues) {
-    showStatus('Generate the grid preview first', 'error');
-    return null;
-  }
-
-  const title = document.getElementById('puzzleTitle').value.trim() || 'Family Puzzle';
-  const desc = document.getElementById('puzzleDesc').value.trim();
-
-  return {
-    title,
-    description: desc,
-    source: 'custom',
-    gridData: currentGrid.grid,
-    clues: currentClues.clues,
-    answers: buildAnswerMap(currentClues.clues),
-    wordCount: currentGrid.placedWords.length,
-    created: Date.now(),
+    return html;
   };
+
+  clueDiv.innerHTML = makeList('Across', puzzle.clues.across) + makeList('Down', puzzle.clues.down);
+
+  // Show status
+  showStatus(`✓ Placed ${puzzle.placed} of ${puzzle.total} words`, 'success');
+
+  // Show save/export buttons
+  document.getElementById('btnSave').style.display = '';
+  document.getElementById('btnExport').style.display = '';
 }
 
-function buildAnswerMap(clues) {
-  const answers = {};
-  clues.across?.forEach(c => { answers[`across_${c.number}`] = c.answer; });
-  clues.down?.forEach(c => { answers[`down_${c.number}`] = c.answer; });
-  return answers;
-}
+/* ═══════════ SAVE / EXPORT ═══════════ */
 
 async function savePuzzle() {
-  const puzzle = buildPuzzleObject();
-  if (!puzzle) return;
-
-  const btn = document.getElementById('saveBtn');
-  btn.disabled = true;
-  btn.textContent = 'Saving...';
+  if (!builtPuzzle) {
+    showStatus('Build the crossword first!', 'error');
+    return;
+  }
 
   try {
     const ref = db.ref('custom_puzzles').push();
-    await ref.set(puzzle);
-    showStatus(`"${puzzle.title}" saved to cloud! ✓`, 'success');
-    btn.textContent = '✓ Saved!';
-    setTimeout(() => { btn.textContent = 'Save to Cloud ☁'; btn.disabled = false; }, 3000);
-  } catch(e) {
-    showStatus('Save failed — check Firebase config', 'error');
-    btn.textContent = 'Save to Cloud ☁';
-    btn.disabled = false;
+    await ref.set({
+      ...builtPuzzle,
+      created: firebase.database.ServerValue.TIMESTAMP
+    });
+    showStatus('✓ Saved to vault! Go play it.', 'success');
+  } catch (e) {
+    showStatus('Error saving: ' + e.message, 'error');
   }
 }
 
-function exportPuzzle() {
-  const puzzle = buildPuzzleObject();
-  if (!puzzle) return;
-
-  const blob = new Blob([JSON.stringify(puzzle, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${puzzle.title.replace(/\s+/g,'-').toLowerCase()}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showStatus('Puzzle exported!', 'success');
+function exportJSON() {
+  if (!builtPuzzle) return;
+  const json = JSON.stringify(builtPuzzle, null, 2);
+  navigator.clipboard?.writeText(json);
+  showStatus('✓ JSON copied to clipboard', 'info');
 }
 
 function showStatus(msg, type) {
-  const bar = document.getElementById('statusBar');
-  bar.textContent = msg;
-  bar.className = `status-bar ${type}`;
-  setTimeout(() => { bar.className = 'status-bar hidden'; }, 4000);
+  const el = document.getElementById('statusMsg');
+  el.className = `status status-${type}`;
+  el.textContent = msg;
+  setTimeout(() => { el.textContent = ''; el.className = ''; }, 5000);
 }
 
-// Initialize word list
-renderWordList();
+// Init
+init();
 </script>
 </body>
 </html>
