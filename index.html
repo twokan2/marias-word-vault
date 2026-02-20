@@ -449,6 +449,52 @@ input[type="text"]:focus {
 
 .game-mode-badge.competitive { background: rgba(184,76,42,0.3); color: #e89070; }
 .game-mode-badge.collaborative { background: rgba(74,124,94,0.3); color: #a8c4b2; }
+.game-mode-badge.solo { background: rgba(201,148,58,0.25); color: var(--gold-light); }
+
+.solo-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 1rem;
+}
+.solo-divider::before, .solo-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(201,148,58,0.2);
+}
+.solo-divider span {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  white-space: nowrap;
+}
+
+.btn-solo {
+  width: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1.5px solid rgba(201,148,58,0.35);
+  border-radius: 2px;
+  padding: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.btn-solo:hover {
+  background: white;
+  border-color: var(--gold);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(26,18,8,0.08);
+}
 
 .timer {
   font-family: var(--font-mono);
@@ -783,6 +829,10 @@ input[type="text"]:focus {
     </div>
 
     <button class="btn-primary" id="joinBtn" onclick="joinRoom()">Enter Room →</button>
+
+    <div class="solo-divider"><span>or play alone</span></div>
+    <button class="btn-solo" id="soloBtn" onclick="playSolo()">🧩 Play Solo</button>
+
     <div id="lobbyStatus" class="status-msg" style="display:none"></div>
   </div>
 </div>
@@ -823,6 +873,10 @@ input[type="text"]:focus {
       <div class="player-score" id="scoreP2">
         <div class="ps-name" id="scoreP2Name">P2</div>
         <div class="ps-val" id="scoreP2Val">0</div>
+      </div>
+      <div class="player-score" id="scoreSolo" style="display:none">
+        <div class="ps-name">Words</div>
+        <div class="ps-val" id="scoreSoloVal">0</div>
       </div>
       <div class="game-mode-badge" id="modeBadge">Collaborative</div>
       <div class="timer" id="timerDisplay">0:00</div>
@@ -1033,7 +1087,60 @@ async function joinRoom() {
   btn.disabled = false;
 }
 
-// ===== PUZZLE FETCHING =====
+// ===== SOLO MODE =====
+async function playSolo() {
+  const name = document.getElementById('playerName').value.trim() || 'Player';
+  if (state.puzzleType === 'custom' && !state.selectedCustomPuzzle) {
+    showLobbyStatus('Select a family puzzle first', 'error'); return;
+  }
+
+  const btn = document.getElementById('soloBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Loading puzzle...';
+
+  let puzzle = null;
+  if (state.puzzleType === 'custom') {
+    puzzle = state.selectedCustomPuzzle;
+  } else {
+    puzzle = await fetchRandomPuzzle();
+  }
+
+  if (!puzzle) {
+    showLobbyStatus('Failed to load puzzle. Try again.', 'error');
+    btn.disabled = false;
+    btn.textContent = '🧩 Play Solo';
+    return;
+  }
+
+  state.playerName = name;
+  state.playerId = 'solo';
+  state.mode = 'solo';
+  state.puzzle = puzzle;
+  state.roomRef = null;
+  state.gameComplete = false;
+
+  // Show/hide appropriate score elements
+  document.getElementById('scoreP1').style.display = 'none';
+  document.getElementById('scoreP2').style.display = 'none';
+  document.getElementById('scoreSolo').style.display = 'block';
+
+  const modeBadge = document.getElementById('modeBadge');
+  modeBadge.textContent = '🧩 Solo';
+  modeBadge.className = 'game-mode-badge solo';
+
+  document.getElementById('gameTitle').textContent = puzzle.title || "Maria's Word Vault";
+
+  state.clues = puzzle.clues;
+  state.answers = puzzle.answers || {};
+
+  buildGrid(puzzle);
+  buildCluePanel();
+  startTimer(Date.now());
+  showScreen('game');
+
+  btn.disabled = false;
+  btn.textContent = '🧩 Play Solo';
+}
 async function fetchRandomPuzzle() {
   try {
     // Shadify API - free, no key needed
@@ -1432,11 +1539,21 @@ document.addEventListener('keydown', e => {
 
 function setLetter(row, col, letter) {
   const pid = state.playerId;
+
+  // Solo mode — update local grid only, no Firebase
+  if (state.mode === 'solo') {
+    state.grid[row][col].filled = { shared: letter };
+    const cellEl = document.getElementById(`cell-${row}-${col}`);
+    if (cellEl) cellEl.querySelector('.cell-letter').textContent = letter;
+    updateSolvedClues();
+    checkCompletion();
+    return;
+  }
+
   const firebasePath = `${row}_${col}`;
   const cellRef = state.roomRef?.child(`cells/${firebasePath}`);
 
   if (letter === '') {
-    // Clear — only clear your own letter in competitive, shared in collaborative
     if (state.mode === 'competitive') {
       cellRef?.child(pid).set('');
     } else {
@@ -1538,8 +1655,8 @@ function updateCursors(cursors) {
 }
 
 function updateSolvedClues() {
-  // Check which words are complete and correct
   const solved = {};
+  const isSolo = state.mode === 'solo';
 
   const checkWord = (clue) => {
     const key = `${clue.dir}_${clue.number}`;
@@ -1562,10 +1679,12 @@ function updateSolvedClues() {
   state.clues.across?.forEach(checkWord);
   state.clues.down?.forEach(checkWord);
 
-  // Update scores in competitive mode
-  if (state.mode === 'competitive') {
-    const myWords = Object.values(solved).filter(Boolean).length;
-    state.roomRef?.child(`scores/${state.playerId}`).set(myWords);
+  const solvedCount = Object.values(solved).filter(Boolean).length;
+
+  if (isSolo) {
+    document.getElementById('scoreSoloVal').textContent = solvedCount;
+  } else if (state.mode === 'competitive') {
+    state.roomRef?.child(`scores/${state.playerId}`).set(solvedCount);
   }
 }
 
@@ -1576,9 +1695,8 @@ function updateScoreDisplay() {
 
 function checkCompletion() {
   if (state.gameComplete) return;
-  
+
   let totalCells = 0;
-  let filledCells = 0;
   let correctCells = 0;
 
   for (const row of state.grid) {
@@ -1588,7 +1706,6 @@ function checkCompletion() {
       const letter = state.mode === 'competitive'
         ? (cell.filled?.[state.playerId] || cell.filled?.[state.playerId === 'p1' ? 'p2' : 'p1'] || '')
         : (cell.filled?.shared || '');
-      if (letter) filledCells++;
       if (letter.toUpperCase() === cell.answer.toUpperCase()) correctCells++;
     }
   }
@@ -1640,7 +1757,11 @@ function showWinScreen() {
   const overlay = document.getElementById('winOverlay');
   const scoreDisplay = document.getElementById('scoreDisplay');
 
-  if (state.mode === 'competitive') {
+  if (state.mode === 'solo') {
+    document.getElementById('winTitle').textContent = '🎉 Solved!';
+    document.getElementById('winnerMsg').textContent = `Nice work, ${state.playerName}!`;
+    scoreDisplay.innerHTML = '';
+  } else if (state.mode === 'competitive') {
     const p1Score = state.scores.p1 || 0;
     const p2Score = state.scores.p2 || 0;
     const p1Name = document.getElementById('scoreP1Name').textContent;
@@ -1696,6 +1817,13 @@ function leaveRoom() {
   state.grid = [];
   state.selectedCell = null;
   state.gameComplete = false;
+  state.mode = 'collaborative';
+
+  // Reset score UI back to multiplayer layout
+  document.getElementById('scoreP1').style.display = 'block';
+  document.getElementById('scoreP2').style.display = 'block';
+  document.getElementById('scoreSolo').style.display = 'none';
+
   document.getElementById('winOverlay').style.display = 'none';
   showScreen('lobby');
 }
