@@ -2,917 +2,823 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Maria's Word Vault</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ===== DESIGN SYSTEM ===== */
+/* ═══════════════════════════════════════════ */
+/*  MARIA'S WORD VAULT — Design System        */
+/* ═══════════════════════════════════════════ */
 :root {
   --ink: #1a1208;
-  --cream: #f5efe3;
+  --ink-soft: #3d3224;
+  --ink-faint: #6b5d4f;
   --paper: #faf7f2;
+  --paper-warm: #f5f0e8;
+  --paper-dim: #ebe5d9;
   --gold: #c9943a;
   --gold-light: #e8c97a;
   --gold-dim: #8a6420;
   --rust: #b84c2a;
   --sage: #4a7c5e;
-  --sage-light: #a8c4b2;
-  --cell-size: clamp(28px, 4vw, 42px);
-  --font-display: 'Playfair Display', Georgia, serif;
-  --font-mono: 'DM Mono', monospace;
-  --font-body: 'DM Sans', sans-serif;
+  --sage-light: #d4e8dc;
+  --blue-select: #a8c8e8;
+  --blue-active: #6ba3d6;
+  --cell-size: 40px;
+  --grid-gap: 0px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { font-size: 16px; }
-
-body {
+html, body {
+  height: 100%; width: 100%;
+  overflow: hidden;
+  font-family: 'DM Sans', sans-serif;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-body);
-  min-height: 100vh;
-  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
 }
 
-/* ===== NOISE TEXTURE OVERLAY ===== */
 body::before {
   content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
   pointer-events: none;
-  z-index: 0;
-  opacity: 0.6;
+  z-index: 9999;
 }
 
-/* ===== SCREENS ===== */
-.screen { display: none; position: relative; z-index: 1; }
-.screen.active { display: block; }
+/* ═══════════ TYPOGRAPHY ═══════════ */
+.font-display { font-family: 'Playfair Display', Georgia, serif; }
+.font-mono { font-family: 'DM Mono', monospace; }
 
-/* ===== LOBBY ===== */
-#lobby {
-  min-height: 100vh;
-  display: flex;
+/* ═══════════ SCREENS ═══════════ */
+.screen {
+  display: none;
+  position: fixed; inset: 0;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 2rem;
-}
-
-.lobby-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.lobby-header h1 {
-  font-family: var(--font-display);
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 900;
-  color: var(--ink);
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-
-.lobby-header h1 span {
-  color: var(--gold);
-}
-
-.lobby-header p {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--gold-dim);
-  margin-top: 0.75rem;
-}
-
-.lobby-card {
-  background: white;
-  border: 1.5px solid rgba(201,148,58,0.25);
-  border-radius: 2px;
-  padding: 2rem;
-  width: 100%;
-  max-width: 480px;
-  box-shadow: 0 4px 40px rgba(26,18,8,0.08), 4px 4px 0 var(--gold-light);
-}
-
-.lobby-card h2 {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(201,148,58,0.2);
-}
-
-.field-group {
-  margin-bottom: 1.25rem;
-}
-
-label {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--gold-dim);
-  margin-bottom: 0.4rem;
-}
-
-input[type="text"] {
-  width: 100%;
+  overflow-y: auto;
   background: var(--paper);
-  border: 1.5px solid rgba(201,148,58,0.3);
-  border-radius: 2px;
-  padding: 0.6rem 0.8rem;
-  font-family: var(--font-mono);
-  font-size: 0.9rem;
+}
+.screen.active { display: flex; }
+
+/* ═══════════ LOBBY ═══════════ */
+#screenLobby {
+  justify-content: center;
+  padding: 24px;
+  gap: 0;
+}
+
+.lobby-masthead {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.lobby-rule {
+  width: 60px; height: 2px;
+  background: var(--gold);
+  margin: 0 auto 12px;
+}
+
+.lobby-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 6vw, 2.6rem);
+  font-weight: 800;
   color: var(--ink);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.lobby-subtitle {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+.lobby-form {
+  width: 100%; max-width: 340px;
+  display: flex; flex-direction: column;
+  gap: 12px;
+}
+
+.form-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: -6px;
+  margin-top: 8px;
+}
+
+.form-input {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem; font-weight: 600;
+  padding: 12px 16px;
+  border: 2px solid var(--paper-dim);
+  border-radius: 2px;
+  background: white;
+  color: var(--ink);
+  outline: none;
   transition: border-color 0.2s;
+  width: 100%;
+}
+.form-input:focus { border-color: var(--gold); }
+.form-input::placeholder { color: #bbb; font-weight: 400; }
+
+.mode-picker {
+  display: flex; gap: 6px;
+  width: 100%;
+}
+.mode-btn {
+  flex: 1;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  padding: 10px 6px;
+  border: 2px solid var(--paper-dim);
+  border-radius: 2px;
+  background: white;
+  color: var(--ink-faint);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+.mode-btn.selected {
+  border-color: var(--gold);
+  color: var(--ink);
+  background: var(--paper-warm);
+  box-shadow: 0 2px 0 var(--gold-dim);
+}
+
+.puzzle-picker {
+  display: flex; gap: 6px; width: 100%;
+}
+.puzzle-btn {
+  flex: 1;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem; font-weight: 500;
+  padding: 10px 6px;
+  border: 2px solid var(--paper-dim);
+  border-radius: 2px;
+  background: white; color: var(--ink-faint);
+  cursor: pointer; text-align: center;
+  transition: all 0.15s;
+}
+.puzzle-btn.selected {
+  border-color: var(--sage);
+  color: var(--ink);
+  background: var(--sage-light);
+}
+
+.room-row {
+  display: flex; gap: 8px; width: 100%;
+}
+.room-row .form-input { flex: 1; text-transform: uppercase; letter-spacing: 3px; font-family: 'DM Mono', monospace; }
+
+.btn-primary {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700;
+  padding: 14px 24px;
+  border: none; border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.12s;
+  width: 100%;
+  letter-spacing: 0.5px;
+}
+.btn-gold {
+  background: var(--gold);
+  color: white;
+  box-shadow: 0 2px 0 var(--gold-dim);
+}
+.btn-gold:active { transform: translateY(2px); box-shadow: none; }
+
+.btn-rust {
+  background: var(--rust);
+  color: white;
+  box-shadow: 0 2px 0 #8a3318;
+}
+.btn-rust:active { transform: translateY(2px); box-shadow: none; }
+
+.btn-sage {
+  background: var(--sage);
+  color: white;
+  box-shadow: 0 2px 0 #375e46;
+}
+.btn-sage:active { transform: translateY(2px); box-shadow: none; }
+
+.btn-outline {
+  background: transparent;
+  color: var(--ink-faint);
+  border: 2px solid var(--paper-dim);
+  box-shadow: none;
+  font-size: 0.85rem;
+}
+
+.lobby-actions {
+  display: flex; flex-direction: column;
+  gap: 8px; width: 100%;
+  margin-top: 8px;
+}
+
+.lobby-divider {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; margin: 4px 0;
+}
+.lobby-divider::before, .lobby-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--paper-dim);
+}
+.lobby-divider span {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem; color: #ccc;
+  letter-spacing: 2px; text-transform: uppercase;
+}
+
+.custom-puzzle-select {
+  width: 100%;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  border: 2px solid var(--paper-dim);
+  border-radius: 2px;
+  background: white;
+  color: var(--ink);
   outline: none;
 }
 
-input[type="text"]:focus {
-  border-color: var(--gold);
-}
-
-.mode-picker {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
-}
-
-.mode-btn {
-  border: 1.5px solid rgba(201,148,58,0.3);
-  background: var(--paper);
-  border-radius: 2px;
-  padding: 0.8rem;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.2s;
-  font-family: var(--font-body);
-}
-
-.mode-btn:hover { border-color: var(--gold); background: white; }
-
-.mode-btn.selected {
-  border-color: var(--gold);
-  background: var(--ink);
-  color: var(--gold-light);
-}
-
-.mode-btn .mode-icon { font-size: 1.4rem; display: block; margin-bottom: 0.25rem; }
-.mode-btn .mode-label { font-weight: 500; font-size: 0.85rem; }
-.mode-btn .mode-sub { font-size: 0.7rem; opacity: 0.65; margin-top: 0.2rem; }
-
-.puzzle-picker {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.puzzle-type-btn {
-  border: 1.5px solid rgba(201,148,58,0.3);
-  background: var(--paper);
-  border-radius: 2px;
-  padding: 0.7rem;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.2s;
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-}
-
-.puzzle-type-btn:hover { border-color: var(--gold); background: white; }
-.puzzle-type-btn.selected { border-color: var(--gold); background: var(--ink); color: var(--gold-light); }
-.puzzle-type-btn .pt-icon { font-size: 1.2rem; display: block; margin-bottom: 0.2rem; }
-
-.divider {
-  text-align: center;
-  margin: 1rem 0;
-  position: relative;
-}
-
-.divider::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0; right: 0;
-  height: 1px;
-  background: rgba(201,148,58,0.2);
-}
-
-.divider span {
-  background: white;
-  padding: 0 0.75rem;
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gold-dim);
-  position: relative;
-}
-
-.btn-primary {
-  width: 100%;
-  background: var(--ink);
-  color: var(--gold-light);
-  border: none;
-  border-radius: 2px;
-  padding: 0.85rem;
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 0.75rem;
-}
-
-.btn-primary:hover {
-  background: #2d2010;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(26,18,8,0.2);
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.btn-secondary {
-  width: 100%;
-  background: transparent;
-  color: var(--ink);
-  border: 1.5px solid rgba(26,18,8,0.2);
-  border-radius: 2px;
-  padding: 0.75rem;
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-secondary:hover {
-  border-color: var(--gold);
-  color: var(--gold-dim);
-}
-
-.custom-puzzles-list {
-  margin-top: 0.75rem;
-  max-height: 160px;
-  overflow-y: auto;
-}
-
-.custom-puzzle-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.6rem;
-  border: 1px solid rgba(201,148,58,0.2);
-  border-radius: 2px;
-  margin-bottom: 0.4rem;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.15s;
-}
-
-.custom-puzzle-item:hover { background: var(--paper); border-color: var(--gold); }
-.custom-puzzle-item.selected { background: var(--ink); color: var(--gold-light); }
-.custom-puzzle-item .pi-name { font-weight: 500; }
-.custom-puzzle-item .pi-meta { font-family: var(--font-mono); font-size: 0.65rem; opacity: 0.6; }
-
-.status-msg {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  text-align: center;
-  padding: 0.6rem;
-  border-radius: 2px;
-  margin-top: 0.75rem;
-}
-
-.status-msg.info { background: rgba(201,148,58,0.1); color: var(--gold-dim); }
-.status-msg.error { background: rgba(184,76,42,0.1); color: var(--rust); }
-.status-msg.success { background: rgba(74,124,94,0.1); color: var(--sage); }
-
-/* ===== WAITING ROOM ===== */
-#waiting {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
+/* ═══════════ WAITING ROOM ═══════════ */
+#screenWaiting {
   justify-content: center;
-  padding: 2rem;
+  gap: 20px;
+  padding: 24px;
 }
 
-.waiting-card {
-  background: white;
-  border: 1.5px solid rgba(201,148,58,0.25);
-  border-radius: 2px;
-  padding: 2.5rem 2rem;
-  width: 100%;
-  max-width: 420px;
-  text-align: center;
-  box-shadow: 0 4px 40px rgba(26,18,8,0.08), 4px 4px 0 var(--gold-light);
+.waiting-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
 }
 
-.waiting-card h2 {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.room-code-display {
-  font-family: var(--font-mono);
+.room-code-box {
+  font-family: 'DM Mono', monospace;
   font-size: 2rem;
-  font-weight: 500;
-  letter-spacing: 0.3em;
+  letter-spacing: 8px;
   color: var(--gold);
-  background: var(--paper);
-  border: 1.5px solid rgba(201,148,58,0.3);
+  background: white;
+  padding: 12px 28px;
+  border: 2px solid var(--paper-dim);
   border-radius: 2px;
-  padding: 0.75rem 1.5rem;
-  margin: 1.25rem 0;
-  display: inline-block;
 }
+
+.share-url {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  word-break: break-all;
+  text-align: center;
+  max-width: 300px;
+  cursor: pointer;
+}
+.share-url:hover { color: var(--gold); }
 
 .player-slots {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  margin: 1.5rem 0;
+  display: flex; flex-direction: column;
+  gap: 8px; width: 100%; max-width: 280px;
 }
 
 .player-slot {
-  border: 1.5px solid rgba(201,148,58,0.2);
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  border: 2px solid var(--paper-dim);
   border-radius: 2px;
-  padding: 0.75rem;
-  font-size: 0.85rem;
-}
-
-.player-slot.filled {
-  border-color: var(--sage-light);
-  background: rgba(74,124,94,0.06);
-}
-
-.player-slot .slot-name { font-weight: 500; }
-.player-slot .slot-status { font-family: var(--font-mono); font-size: 0.65rem; opacity: 0.6; margin-top: 0.2rem; }
-
-.pulse-dot {
-  display: inline-block;
-  width: 8px; height: 8px;
-  background: var(--gold);
-  border-radius: 50%;
-  animation: pulse 1.5s infinite;
-  margin-right: 0.4rem;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.8); }
-}
-
-/* ===== GAME SCREEN ===== */
-#game {
-  min-height: 100vh;
-  display: grid;
-  grid-template-rows: auto 1fr;
-}
-
-.game-header {
-  background: var(--ink);
-  color: var(--cream);
-  padding: 0.75rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.game-title {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--gold-light);
-}
-
-.game-meta {
-  display: flex;
-  gap: 1.5rem;
-  align-items: center;
-}
-
-.player-score {
-  text-align: center;
-}
-
-.player-score .ps-name {
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  opacity: 0.6;
-}
-
-.player-score .ps-val {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--gold-light);
-}
-
-.player-score.active-player .ps-val {
-  color: white;
-}
-
-.game-mode-badge {
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 0.25rem 0.6rem;
-  border-radius: 2px;
-  background: rgba(201,148,58,0.2);
-  color: var(--gold-light);
-}
-
-.game-mode-badge.competitive { background: rgba(184,76,42,0.3); color: #e89070; }
-.game-mode-badge.collaborative { background: rgba(74,124,94,0.3); color: #a8c4b2; }
-.game-mode-badge.solo { background: rgba(201,148,58,0.25); color: var(--gold-light); }
-
-.solo-divider {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 1.25rem 0 1rem;
-}
-.solo-divider::before, .solo-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: rgba(201,148,58,0.2);
-}
-.solo-divider span {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gold-dim);
-  white-space: nowrap;
-}
-
-.btn-solo {
-  width: 100%;
-  background: var(--paper);
-  color: var(--ink);
-  border: 1.5px solid rgba(201,148,58,0.35);
-  border-radius: 2px;
-  padding: 0.75rem;
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-.btn-solo:hover {
   background: white;
-  border-color: var(--gold);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(26,18,8,0.08);
+  font-weight: 600;
+  font-size: 0.9rem;
 }
-
-.timer {
-  font-family: var(--font-mono);
-  font-size: 1.1rem;
-  color: var(--gold-light);
+.player-slot.connected { border-color: var(--sage); }
+.player-slot .dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--paper-dim);
 }
+.player-slot.connected .dot { background: var(--sage); }
 
-.btn-icon {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.15);
-  color: var(--cream);
-  border-radius: 2px;
-  padding: 0.35rem 0.7rem;
-  font-size: 0.8rem;
-  cursor: pointer;
-  font-family: var(--font-body);
-  transition: all 0.2s;
+.waiting-spinner {
+  width: 24px; height: 24px;
+  border: 3px solid var(--paper-dim);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.btn-icon:hover { background: rgba(255,255,255,0.2); }
-
-.game-body {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 0;
-  height: calc(100vh - 60px);
+/* ═══════════ GAME SCREEN ═══════════ */
+#screenGame {
+  padding: 0;
   overflow: hidden;
 }
 
-@media (max-width: 768px) {
-  .game-body {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
-    height: auto;
-  }
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--ink);
+  color: var(--paper);
+  width: 100%;
+  min-height: 44px;
+  flex-shrink: 0;
+  z-index: 10;
 }
 
-/* ===== CROSSWORD GRID ===== */
-.grid-container {
+.game-header-left {
+  display: flex; align-items: center; gap: 8px;
+}
+.game-back-btn {
+  background: none; border: none;
+  color: var(--paper); font-size: 1.1rem;
+  cursor: pointer; padding: 4px;
+  opacity: 0.7;
+}
+.game-back-btn:hover { opacity: 1; }
+
+.game-title-sm {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.game-header-right {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.hud-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  background: rgba(255,255,255,0.1);
+  padding: 3px 10px;
+  border-radius: 2px;
+  display: flex; align-items: center; gap: 4px;
+}
+.hud-badge .val { color: var(--gold-light); font-weight: 600; }
+
+/* Clue bar below header */
+.clue-bar {
+  width: 100%;
+  padding: 10px 14px;
+  background: white;
+  border-bottom: 1px solid var(--paper-dim);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 48px;
+  flex-shrink: 0;
+  z-index: 5;
+  cursor: pointer;
+}
+
+.clue-number {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--gold-dim);
+  flex-shrink: 0;
+  padding-top: 2px;
+  min-width: 50px;
+}
+
+.clue-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.35;
+  flex: 1;
+}
+
+/* Grid wrapper — takes remaining space */
+.grid-wrapper {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
-  background: var(--paper);
-  overflow: auto;
+  overflow: hidden;
+  padding: 8px;
+  position: relative;
+  width: 100%;
 }
 
 .crossword-grid {
-  display: inline-grid;
+  display: grid;
+  gap: var(--grid-gap);
+  position: relative;
   border: 2px solid var(--ink);
-  gap: 0;
-  box-shadow: 4px 4px 0 var(--ink);
 }
 
-.cell {
+.grid-cell {
   width: var(--cell-size);
   height: var(--cell-size);
-  border: 1px solid #ccc;
   position: relative;
+  background: white;
+  border: 0.5px solid #ccc;
   cursor: pointer;
-  transition: background 0.1s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.cell.black {
+.grid-cell.black {
   background: var(--ink);
   cursor: default;
   border-color: var(--ink);
 }
 
-.cell.white { background: white; }
-
-.cell.selected {
-  background: rgba(201,148,58,0.35) !important;
-}
-
-.cell.highlighted {
-  background: rgba(201,148,58,0.12);
-}
-
-.cell.p1-cursor { background: rgba(26,18,8,0.55) !important; }
-.cell.p2-cursor { background: rgba(26,18,8,0.35) !important; }
-
-/* Competitive: show who filled each cell */
-.cell.filled-p1 { background: rgba(201,148,58,0.15); }
-.cell.filled-p2 { background: rgba(74,124,94,0.15); }
-
-.cell.correct .cell-letter { color: var(--sage); }
-.cell.incorrect .cell-letter { color: var(--rust); }
-
-.cell-number {
+.grid-cell .cell-number {
   position: absolute;
-  top: 1px;
-  left: 2px;
-  font-family: var(--font-mono);
-  font-size: calc(var(--cell-size) * 0.22);
-  line-height: 1;
-  color: var(--ink);
-  pointer-events: none;
-  user-select: none;
-}
-
-.cell-letter {
-  font-family: var(--font-display);
-  font-size: calc(var(--cell-size) * 0.55);
+  top: 1px; left: 2px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: calc(var(--cell-size) * 0.24);
   font-weight: 700;
   color: var(--ink);
-  text-transform: uppercase;
-  user-select: none;
+  line-height: 1;
   pointer-events: none;
 }
 
-/* ===== CLUE PANEL ===== */
-.clue-panel {
-  border-left: 1.5px solid rgba(201,148,58,0.2);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: white;
-}
-
-.clue-sections {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1rem;
-}
-
-.clue-section h3 {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--gold-dim);
-  margin-bottom: 0.6rem;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid rgba(201,148,58,0.2);
-}
-
-.clue-item {
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.4rem 0.5rem;
-  border-radius: 2px;
-  cursor: pointer;
-  transition: background 0.15s;
-  margin-bottom: 0.2rem;
-  font-size: 0.82rem;
-  line-height: 1.35;
-}
-
-.clue-item:hover { background: var(--paper); }
-.clue-item.active { background: rgba(201,148,58,0.12); }
-.clue-item.solved { opacity: 0.45; }
-
-.clue-num {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--gold-dim);
-  min-width: 20px;
-  padding-top: 1px;
-}
-
-.active-clue-bar {
-  padding: 0.75rem 1rem;
-  background: var(--ink);
-  color: var(--cream);
-  font-size: 0.85rem;
-  line-height: 1.4;
-  border-top: 1.5px solid rgba(201,148,58,0.3);
-  min-height: 60px;
-}
-
-.active-clue-bar .acb-num {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  color: var(--gold-light);
-  margin-bottom: 0.25rem;
-}
-
-/* ===== PUZZLE COMPLETE OVERLAY ===== */
-.overlay {
-  position: fixed;
+.grid-cell .cell-letter {
+  position: absolute;
   inset: 0;
-  background: rgba(26,18,8,0.7);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
-  backdrop-filter: blur(4px);
+  font-family: 'DM Sans', sans-serif;
+  font-size: calc(var(--cell-size) * 0.52);
+  font-weight: 700;
+  color: var(--ink);
+  pointer-events: none;
+  text-transform: uppercase;
 }
 
-.overlay-card {
+/* Selection states — NYT style */
+.grid-cell.word-highlight {
+  background: var(--blue-select);
+}
+
+.grid-cell.selected {
+  background: var(--blue-active);
+}
+
+/* Peer cursor */
+.grid-cell.peer-cursor {
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+/* Correct / incorrect feedback */
+.grid-cell.correct-flash {
+  animation: correctPulse 0.4s ease;
+}
+@keyframes correctPulse {
+  0% { background: var(--sage-light); }
+  100% { background: white; }
+}
+
+.grid-cell.incorrect-flash .cell-letter {
+  color: var(--rust);
+}
+
+/* Clue panel (bottom drawer) */
+.clue-drawer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
   background: white;
-  border: 2px solid var(--gold);
-  border-radius: 2px;
-  padding: 2.5rem 2rem;
-  max-width: 400px;
-  width: 90%;
+  border-top: 2px solid var(--paper-dim);
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  z-index: 20;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+.clue-drawer.open { transform: translateY(0); }
+
+.clue-drawer-handle {
+  width: 100%;
+  padding: 10px;
   text-align: center;
-  box-shadow: 8px 8px 0 var(--gold-light);
-  animation: slideIn 0.3s ease;
+  cursor: pointer;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+  border-bottom: 1px solid var(--paper-dim);
+}
+.clue-drawer-handle::after {
+  content: '';
+  display: inline-block;
+  width: 36px; height: 4px;
+  background: var(--paper-dim);
+  border-radius: 2px;
 }
 
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(20px); }
+.clue-section {
+  padding: 8px 14px 14px;
+}
+
+.clue-section-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--paper-dim);
+  margin-bottom: 4px;
+}
+
+.clue-item {
+  display: flex; gap: 8px;
+  padding: 7px 0;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+.clue-item:hover { background: var(--paper-warm); margin: 0 -14px; padding: 7px 14px; }
+.clue-item.completed .clue-item-text { color: var(--ink-faint); text-decoration: line-through; }
+
+.clue-item-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--gold-dim);
+  min-width: 28px;
+  flex-shrink: 0;
+}
+
+.clue-item-text {
+  font-size: 0.85rem;
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+/* Keyboard bar (for toggling direction) */
+.keyboard-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  background: var(--paper-warm);
+  border-top: 1px solid var(--paper-dim);
+  flex-shrink: 0;
+  gap: 8px;
+  z-index: 5;
+}
+
+.kb-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  padding: 6px 14px;
+  border: 1px solid var(--paper-dim);
+  border-radius: 2px;
+  background: white;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+.kb-btn.active { border-color: var(--gold); color: var(--ink); background: var(--paper); }
+
+.kb-btn-icon {
+  font-size: 1rem;
+  padding: 6px 10px;
+  border: 1px solid var(--paper-dim);
+  border-radius: 2px;
+  background: white;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+/* ═══════════ WIN SCREEN ═══════════ */
+#screenWin {
+  justify-content: center;
+  gap: 16px;
+  padding: 32px;
+}
+
+.win-ornament {
+  font-size: 2.4rem;
+}
+
+.win-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  font-weight: 800;
+  text-align: center;
+}
+
+.win-subtitle {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  letter-spacing: 1px;
+}
+
+.win-stats {
+  display: flex; gap: 24px;
+  margin: 8px 0;
+}
+
+.win-stat {
+  text-align: center;
+}
+.win-stat-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--gold);
+}
+.win-stat-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--ink-faint);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.win-scores {
+  display: flex; gap: 32px;
+  margin: 8px 0;
+}
+.win-player {
+  text-align: center;
+}
+.win-player-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+.win-player-score {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--gold);
+}
+.win-player.winner .win-player-score { color: var(--sage); }
+
+/* ═══════════ HIDDEN INPUT FOR MOBILE ═══════════ */
+#hiddenInput {
+  position: fixed;
+  top: -100px; left: -100px;
+  width: 1px; height: 1px;
+  opacity: 0;
+  font-size: 16px; /* prevents iOS zoom */
+  z-index: -1;
+}
+
+/* ═══════════ ANIMATIONS ═══════════ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+.fade-in { animation: fadeIn 0.3s ease forwards; }
 
-.overlay-card h2 {
-  font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 900;
-  margin-bottom: 0.5rem;
+/* ═══════════ RESPONSIVE ═══════════ */
+@media (max-width: 400px) {
+  .game-header { padding: 6px 8px; }
+  .clue-bar { padding: 8px 10px; }
+  .hud-badge { font-size: 0.6rem; padding: 2px 8px; }
 }
-
-.overlay-card .winner-msg {
-  color: var(--gold-dim);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 1.5rem;
-}
-
-.score-display {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin: 1.25rem 0;
-}
-
-.score-box {
-  background: var(--paper);
-  border: 1.5px solid rgba(201,148,58,0.2);
-  border-radius: 2px;
-  padding: 0.75rem;
-}
-
-.score-box.winner {
-  border-color: var(--gold);
-  background: rgba(201,148,58,0.08);
-}
-
-.score-box .sb-name { font-weight: 500; font-size: 0.85rem; }
-.score-box .sb-score { font-family: var(--font-display); font-size: 1.75rem; font-weight: 900; color: var(--gold); }
-
-/* ===== SCROLLBAR ===== */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(201,148,58,0.3); border-radius: 2px; }
-
-/* ===== LOADING ===== */
-.loading-spinner {
-  width: 32px; height: 32px;
-  border: 2px solid rgba(201,148,58,0.2);
-  border-top-color: var(--gold);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 1rem auto;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* hidden file input for custom puzzle import */
-#fileInput { display: none; }
 </style>
 </head>
 <body>
 
-<!-- ===== LOBBY ===== -->
-<div id="lobby" class="screen active">
-  <div class="lobby-header">
-    <h1>Maria's<br><span>Word Vault</span></h1>
-    <p>Play together · Play anywhere</p>
+<!-- Hidden input for mobile keyboard capture -->
+<input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+<!-- ═══════════ SCREEN: LOBBY ═══════════ -->
+<div id="screenLobby" class="screen active">
+  <div class="lobby-masthead">
+    <div class="lobby-rule"></div>
+    <div class="lobby-title font-display">Maria's Word Vault</div>
+    <div class="lobby-subtitle">A Family Crossword</div>
   </div>
 
-  <div class="lobby-card">
-    <h2>Who are you?</h2>
-    <div class="field-group">
-      <label>Your name</label>
-      <input type="text" id="playerName" placeholder="e.g. Terencio" maxlength="20">
+  <div class="lobby-form">
+    <div class="form-label">Your Name</div>
+    <input type="text" id="inputName" class="form-input" placeholder="Enter your name" maxlength="20">
+
+    <div class="form-label">Puzzle</div>
+    <div class="puzzle-picker">
+      <button class="puzzle-btn selected" onclick="setPuzzleType('random')">📰 Daily</button>
+      <button class="puzzle-btn" onclick="setPuzzleType('custom')">👨‍👩‍👧 Family</button>
     </div>
 
-    <div class="field-group">
-      <label>Room code <span style="opacity:0.5">(create new or join existing)</span></label>
-      <input type="text" id="roomCode" placeholder="e.g. MAMA" maxlength="8" style="text-transform:uppercase">
+    <div id="customPuzzleArea" style="display:none">
+      <select id="customPuzzleSelect" class="custom-puzzle-select">
+        <option value="">Loading puzzles...</option>
+      </select>
     </div>
 
-    <div class="field-group">
-      <label>Game mode</label>
-      <div class="mode-picker">
-        <div class="mode-btn selected" data-mode="collaborative" onclick="selectMode('collaborative')">
-          <span class="mode-icon">🤝🏾</span>
-          <span class="mode-label">Collaborative</span>
-          <div class="mode-sub">Solve it together</div>
-        </div>
-        <div class="mode-btn" data-mode="competitive" onclick="selectMode('competitive')">
-          <span class="mode-icon">⚡</span>
-          <span class="mode-label">Competitive</span>
-          <div class="mode-sub">Race to win</div>
-        </div>
+    <div class="form-label">Mode</div>
+    <div class="mode-picker">
+      <button class="mode-btn selected" onclick="setMode('solo')">🧩 Solo</button>
+      <button class="mode-btn" onclick="setMode('collaborative')">🤝🏾 Co-op</button>
+      <button class="mode-btn" onclick="setMode('competitive')">⚔️ Vs</button>
+    </div>
+
+    <div id="roomArea" style="display:none">
+      <div class="form-label">Room Code</div>
+      <div class="room-row">
+        <input type="text" id="inputRoom" class="form-input" placeholder="ABCDE" maxlength="5">
+        <button class="btn-primary btn-gold" style="width:auto;padding:12px 18px" onclick="joinRoom()">Join</button>
       </div>
     </div>
 
-    <div class="field-group">
-      <label>Puzzle source</label>
-      <div class="puzzle-picker">
-        <div class="puzzle-type-btn selected" data-ptype="random" onclick="selectPuzzleType('random')">
-          <span class="pt-icon">🎲</span>
-          Random puzzle
-        </div>
-        <div class="puzzle-type-btn" data-ptype="custom" onclick="selectPuzzleType('custom')">
-          <span class="pt-icon">💝</span>
-          Family puzzle
-        </div>
-      </div>
-      <div id="customPuzzleSection" style="display:none">
-        <div class="custom-puzzles-list" id="customPuzzleList">
-          <div style="text-align:center; font-size:0.8rem; opacity:0.5; padding:0.75rem;">Loading puzzles...</div>
-        </div>
-        <button class="btn-secondary" style="margin-top:0.5rem" onclick="document.getElementById('fileInput').click()">
-          📂 Import puzzle file
-        </button>
-        <input type="file" id="fileInput" accept=".json" onchange="importPuzzleFile(event)">
-        <button class="btn-secondary" style="margin-top:0.5rem" onclick="window.open('builder.html','_blank')">
-          ✏️ Create a new puzzle
-        </button>
-      </div>
+    <div class="lobby-actions">
+      <button id="btnPlay" class="btn-primary btn-gold" onclick="startGame()">Begin Puzzle</button>
     </div>
 
-    <button class="btn-primary" id="joinBtn" onclick="joinRoom()">Enter Room →</button>
-
-    <div class="solo-divider"><span>or play alone</span></div>
-    <button class="btn-solo" id="soloBtn" onclick="playSolo()">🧩 Play Solo</button>
-
-    <div id="lobbyStatus" class="status-msg" style="display:none"></div>
+    <div class="lobby-divider"><span>or</span></div>
+    <a href="builder.html" class="btn-primary btn-outline" style="text-align:center;text-decoration:none;display:block">✏️ Build a Family Puzzle</a>
   </div>
 </div>
 
-<!-- ===== WAITING ===== -->
-<div id="waiting" class="screen">
-  <div class="waiting-card">
-    <h2>Waiting for <span id="waitingFor">Player 2</span>...</h2>
-    <p style="font-size:0.85rem; opacity:0.65; margin-bottom:0.5rem">Share this room code</p>
-    <div class="room-code-display" id="waitingRoomCode">????</div>
-    <p style="font-size:0.78rem; opacity:0.55; margin-bottom:1rem; font-family: var(--font-mono)">
-      also share the URL: <span id="shareUrl" style="color:var(--gold-dim)"></span>
-    </p>
-    <div class="player-slots">
-      <div class="player-slot filled" id="slot1">
-        <div class="slot-name" id="slot1Name">—</div>
-        <div class="slot-status">✓ In room</div>
-      </div>
-      <div class="player-slot" id="slot2">
-        <div class="slot-name">Waiting...</div>
-        <div class="slot-status"><span class="pulse-dot"></span>Joining</div>
-      </div>
-    </div>
-    <div class="loading-spinner"></div>
-    <button class="btn-secondary" style="margin-top:1rem" onclick="leaveRoom()">← Leave</button>
+<!-- ═══════════ SCREEN: WAITING ROOM ═══════════ -->
+<div id="screenWaiting" class="screen">
+  <div class="waiting-title font-display">Waiting for Player 2</div>
+  <div class="room-code-box" id="waitingRoomCode">-----</div>
+  <div class="share-url" id="shareUrl" onclick="copyShareUrl()">tap to copy link</div>
+  <div class="player-slots">
+    <div class="player-slot connected" id="slotP1"><span class="dot"></span><span id="slotP1Name">Player 1</span></div>
+    <div class="player-slot" id="slotP2"><span class="dot"></span><span id="slotP2Name">Waiting...</span></div>
   </div>
+  <div class="waiting-spinner"></div>
+  <button class="btn-primary btn-outline" style="max-width:200px;margin-top:12px" onclick="leaveRoom()">← Back</button>
 </div>
 
-<!-- ===== GAME ===== -->
-<div id="game" class="screen">
+<!-- ═══════════ SCREEN: GAME ═══════════ -->
+<div id="screenGame" class="screen">
   <div class="game-header">
-    <div class="game-title" id="gameTitle">Family Crossword</div>
-    <div class="game-meta">
-      <div class="player-score" id="scoreP1">
-        <div class="ps-name" id="scoreP1Name">P1</div>
-        <div class="ps-val" id="scoreP1Val">0</div>
-      </div>
-      <div class="player-score" id="scoreP2">
-        <div class="ps-name" id="scoreP2Name">P2</div>
-        <div class="ps-val" id="scoreP2Val">0</div>
-      </div>
-      <div class="player-score" id="scoreSolo" style="display:none">
-        <div class="ps-name">Words</div>
-        <div class="ps-val" id="scoreSoloVal">0</div>
-      </div>
-      <div class="game-mode-badge" id="modeBadge">Collaborative</div>
-      <div class="timer" id="timerDisplay">0:00</div>
-      <button class="btn-icon" onclick="checkAll()">Check</button>
-      <button class="btn-icon" onclick="leaveRoom()">Exit</button>
+    <div class="game-header-left">
+      <button class="game-back-btn" onclick="leaveRoom()">←</button>
+      <span class="game-title-sm font-display">Maria's Word Vault</span>
+    </div>
+    <div class="game-header-right">
+      <div class="hud-badge">⏱ <span class="val" id="hudTimer">0:00</span></div>
+      <div class="hud-badge" id="hudScoreBadge">✓ <span class="val" id="hudScore">0</span></div>
     </div>
   </div>
-  <div class="game-body">
-    <div class="grid-container">
-      <div id="crosswordGrid" class="crossword-grid"></div>
+
+  <div class="clue-bar" id="clueBar" onclick="toggleClueDrawer()">
+    <span class="clue-number" id="activeClueNum">—</span>
+    <span class="clue-text" id="activeClueText">Tap a cell to begin</span>
+  </div>
+
+  <div class="grid-wrapper" id="gridWrapper">
+    <div class="crossword-grid" id="crosswordGrid"></div>
+  </div>
+
+  <div class="keyboard-bar">
+    <button class="kb-btn active" id="btnAcross" onclick="setDirection('across')">ACROSS →</button>
+    <button class="kb-btn" id="btnDown" onclick="setDirection('down')">DOWN ↓</button>
+    <button class="kb-btn-icon" onclick="toggleClueDrawer()" title="Show clues">☰</button>
+  </div>
+
+  <!-- Clue drawer -->
+  <div class="clue-drawer" id="clueDrawer">
+    <div class="clue-drawer-handle" onclick="toggleClueDrawer()"></div>
+    <div class="clue-section">
+      <div class="clue-section-title">Across</div>
+      <div id="clueListAcross"></div>
     </div>
-    <div class="clue-panel">
-      <div class="clue-sections" id="clueSections"></div>
-      <div class="active-clue-bar" id="activeClueBar">
-        <div class="acb-num" id="activeClueNum">—</div>
-        <div id="activeClueText">Select a cell to see the clue</div>
-      </div>
+    <div class="clue-section">
+      <div class="clue-section-title">Down</div>
+      <div id="clueListDown"></div>
     </div>
   </div>
 </div>
 
-<!-- ===== WIN OVERLAY ===== -->
-<div id="winOverlay" class="overlay" style="display:none">
-  <div class="overlay-card">
-    <h2 id="winTitle">🎉 Solved!</h2>
-    <div class="winner-msg" id="winnerMsg">Puzzle complete</div>
-    <div class="score-display" id="scoreDisplay"></div>
-    <div style="margin-bottom:1rem; font-family:var(--font-mono); font-size:0.75rem; color:var(--gold-dim)" id="finalTime"></div>
-    <button class="btn-primary" onclick="playAgain()">Play Again</button>
-    <button class="btn-secondary" style="margin-top:0.5rem" onclick="leaveRoom()">Back to Lobby</button>
-  </div>
+<!-- ═══════════ SCREEN: WIN ═══════════ -->
+<div id="screenWin" class="screen">
+  <div class="win-ornament">🏆</div>
+  <div class="win-title font-display" id="winTitle">Puzzle Complete!</div>
+  <div class="win-subtitle" id="winSubtitle"></div>
+  <div class="win-stats" id="winStats"></div>
+  <div class="win-scores" id="winScores" style="display:none"></div>
+  <button class="btn-primary btn-gold" style="max-width:240px" onclick="backToLobby()">Play Again</button>
 </div>
+
+<!-- ═══════════ FIREBASE SDK ═══════════ -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// ===== FIREBASE CONFIG =====
-// 🔧 REPLACE with your Firebase config
+/* ═══════════════════════════════════════════════════════ */
+/*  MARIA'S WORD VAULT — Game Engine                      */
+/* ═══════════════════════════════════════════════════════ */
+
+// Firebase config — DO NOT CHANGE
 const firebaseConfig = {
   apiKey: "AIzaSyDkqQsKeNwL4qL5e-J1P5S3UE1puzcOaC0",
   authDomain: "marias-word-vault.firebaseapp.com",
@@ -926,20 +832,19 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ===== STATE =====
+/* ═══════════ STATE ═══════════ */
 let state = {
   playerName: '',
-  playerId: '',        // p1 or p2
+  playerId: '',
   roomCode: '',
-  mode: 'collaborative',
+  mode: 'solo',
   puzzleType: 'random',
-  puzzle: null,        // processed puzzle data
-  selectedPuzzleId: null, // for custom puzzles
-  grid: [],            // [[{letter, black, number, answerAcross, answerDown, filled:{p1,p2}}]]
-  selectedCell: null,  // {row,col}
-  direction: 'across', // 'across' | 'down'
+  puzzle: null,
+  grid: [],
+  selectedCell: null,
+  direction: 'across',
   clues: { across: [], down: [] },
-  answers: {},         // "across_1": "WORD", "down_3": "WORD"
+  answers: {},
   scores: { p1: 0, p2: 0 },
   timerStart: null,
   timerInterval: null,
@@ -947,893 +852,1029 @@ let state = {
   customPuzzles: [],
   selectedCustomPuzzle: null,
   gameComplete: false,
+  listeners: [],
 };
 
-// ===== LOBBY LOGIC =====
-function selectMode(mode) {
+/* ═══════════ EMBEDDED PUZZLES (REAL CLUES) ═══════════ */
+const EMBEDDED_PUZZLES = [
+  {
+    "title": "Morning Brew",
+    "size": 9,
+    "words": [
+      {"answer":"TOAST","clue":"Breakfast bread","row":4,"col":2,"dir":"across","number":6},
+      {"answer":"STEAM","clue":"Rising from a hot cup","row":1,"col":4,"dir":"down","number":3},
+      {"answer":"STARE","clue":"Gaze intently","row":3,"col":2,"dir":"down","number":5},
+      {"answer":"TASTE","clue":"Sense on the tongue","row":1,"col":6,"dir":"down","number":4},
+      {"answer":"TREAT","clue":"Halloween handout","row":7,"col":0,"dir":"across","number":7},
+      {"answer":"TALES","clue":"Bedtime stories","row":1,"col":0,"dir":"across","number":2},
+      {"answer":"STORE","clue":"Shop","row":0,"col":0,"dir":"down","number":1}
+    ]
+  },
+  {
+    "title": "City Lights",
+    "size": 9,
+    "words": [
+      {"answer":"TOWER","clue":"Eiffel or Babel","row":4,"col":2,"dir":"across","number":6},
+      {"answer":"METRO","clue":"Subway system","row":2,"col":2,"dir":"down","number":4},
+      {"answer":"ROUTE","clue":"Planned path","row":0,"col":5,"dir":"down","number":2},
+      {"answer":"STONE","clue":"Rock, or a Rolling one","row":6,"col":0,"dir":"across","number":7},
+      {"answer":"OUTER","clue":"Not inner","row":2,"col":4,"dir":"across","number":5},
+      {"answer":"VOTER","clue":"Election participant","row":0,"col":1,"dir":"across","number":1},
+      {"answer":"TORN","clue":"Ripped","row":0,"col":8,"dir":"down","number":3}
+    ]
+  },
+  {
+    "title": "Garden Path",
+    "size": 9,
+    "words": [
+      {"answer":"PLANT","clue":"Put in the ground","row":4,"col":2,"dir":"across","number":4},
+      {"answer":"PETAL","clue":"Rose part","row":1,"col":4,"dir":"down","number":1},
+      {"answer":"APPLE","clue":"Pie fruit","row":2,"col":2,"dir":"down","number":3},
+      {"answer":"PANEL","clue":"Discussion group","row":2,"col":1,"dir":"across","number":2},
+      {"answer":"TRAIL","clue":"Hiking path","row":4,"col":6,"dir":"down","number":5},
+      {"answer":"PAINT","clue":"Canvas medium","row":7,"col":4,"dir":"across","number":7},
+      {"answer":"PLATE","clue":"Dinner dish","row":4,"col":8,"dir":"down","number":6}
+    ]
+  },
+  {
+    "title": "Ocean View",
+    "size": 9,
+    "words": [
+      {"answer":"SHORE","clue":"Beach edge","row":4,"col":2,"dir":"across","number":4},
+      {"answer":"HORSE","clue":"Riding animal","row":3,"col":4,"dir":"down","number":2},
+      {"answer":"HASTE","clue":"Hurry","row":2,"col":2,"dir":"down","number":1},
+      {"answer":"HEART","clue":"Pumping organ","row":3,"col":6,"dir":"down","number":3},
+      {"answer":"HEAT","clue":"Summer complaint","row":7,"col":3,"dir":"across","number":5}
+    ]
+  },
+  {
+    "title": "Night Sky",
+    "size": 9,
+    "words": [
+      {"answer":"STARS","clue":"Twinkle in the sky","row":4,"col":2,"dir":"across","number":7},
+      {"answer":"SMART","clue":"Clever","row":2,"col":4,"dir":"down","number":6},
+      {"answer":"STORM","clue":"Thunder and lightning","row":6,"col":3,"dir":"across","number":8},
+      {"answer":"ROAST","clue":"Cook in the oven","row":1,"col":2,"dir":"down","number":4},
+      {"answer":"MARTS","clue":"Discount stores","row":0,"col":6,"dir":"down","number":2},
+      {"answer":"TRAMS","clue":"City rail cars","row":0,"col":3,"dir":"across","number":1},
+      {"answer":"ATOMS","clue":"Tiny particles","row":2,"col":0,"dir":"across","number":5},
+      {"answer":"MAST","clue":"Ship's pole","row":1,"col":0,"dir":"down","number":3}
+    ]
+  }
+];
+
+/* ═══════════ PUZZLE ENGINE ═══════════ */
+
+function buildPuzzleFromEmbedded(data) {
+  const size = data.size;
+  const gridData = Array.from({ length: size }, () => Array(size).fill('#'));
+
+  // Place words on grid
+  for (const w of data.words) {
+    for (let i = 0; i < w.answer.length; i++) {
+      const r = w.dir === 'across' ? w.row : w.row + i;
+      const c = w.dir === 'across' ? w.col + i : w.col;
+      if (r < size && c < size) {
+        gridData[r][c] = w.answer[i];
+      }
+    }
+  }
+
+  const across = data.words.filter(w => w.dir === 'across').map(w => ({
+    number: w.number, clue: w.clue, answer: w.answer,
+    row: w.row, col: w.col, dir: 'across'
+  }));
+  const down = data.words.filter(w => w.dir === 'down').map(w => ({
+    number: w.number, clue: w.clue, answer: w.answer,
+    row: w.row, col: w.col, dir: 'down'
+  }));
+
+  const answers = {};
+  for (const w of data.words) {
+    answers[`${w.dir}_${w.number}`] = w.answer;
+  }
+
+  return {
+    source: 'embedded',
+    title: data.title,
+    gridData,
+    clues: { across, down },
+    answers
+  };
+}
+
+function getRandomPuzzle() {
+  const idx = Math.floor(Math.random() * EMBEDDED_PUZZLES.length);
+  return buildPuzzleFromEmbedded(EMBEDDED_PUZZLES[idx]);
+}
+
+async function fetchCustomPuzzles() {
+  try {
+    const snap = await db.ref('custom_puzzles').orderByChild('created').limitToLast(20).once('value');
+    const puzzles = [];
+    snap.forEach(child => {
+      puzzles.push({ id: child.key, ...child.val() });
+    });
+    state.customPuzzles = puzzles.reverse();
+    renderCustomPuzzleSelect();
+  } catch (e) {
+    console.log('No custom puzzles found:', e.message);
+  }
+}
+
+function renderCustomPuzzleSelect() {
+  const sel = document.getElementById('customPuzzleSelect');
+  sel.innerHTML = '';
+  if (state.customPuzzles.length === 0) {
+    sel.innerHTML = '<option value="">No family puzzles yet — build one!</option>';
+    return;
+  }
+  sel.innerHTML = '<option value="">Choose a puzzle...</option>';
+  for (const p of state.customPuzzles) {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.title || 'Untitled Puzzle';
+    sel.appendChild(opt);
+  }
+}
+
+/* ═══════════ UI HELPERS ═══════════ */
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function setMode(mode) {
   state.mode = mode;
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
-  document.querySelector(`[data-mode="${mode}"]`).classList.add('selected');
+  event.target.classList.add('selected');
+
+  const roomArea = document.getElementById('roomArea');
+  const btnPlay = document.getElementById('btnPlay');
+
+  if (mode === 'solo') {
+    roomArea.style.display = 'none';
+    btnPlay.textContent = 'Begin Puzzle';
+    btnPlay.onclick = startGame;
+    btnPlay.style.display = '';
+  } else {
+    roomArea.style.display = '';
+    btnPlay.textContent = 'Create Room';
+    btnPlay.onclick = createRoom;
+    btnPlay.style.display = '';
+  }
 }
 
-function selectPuzzleType(type) {
+function setPuzzleType(type) {
   state.puzzleType = type;
-  document.querySelectorAll('.puzzle-type-btn').forEach(b => b.classList.remove('selected'));
-  document.querySelector(`[data-ptype="${type}"]`).classList.add('selected');
-  document.getElementById('customPuzzleSection').style.display = type === 'custom' ? 'block' : 'none';
-  if (type === 'custom') loadCustomPuzzles();
+  document.querySelectorAll('.puzzle-btn').forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+  document.getElementById('customPuzzleArea').style.display = type === 'custom' ? '' : 'none';
+  if (type === 'custom') fetchCustomPuzzles();
 }
 
-function loadCustomPuzzles() {
-  db.ref('custom_puzzles').once('value').then(snap => {
-    const data = snap.val() || {};
-    state.customPuzzles = Object.entries(data).map(([id, p]) => ({ id, ...p }));
-    renderCustomPuzzleList();
-  });
-}
-
-function renderCustomPuzzleList() {
-  const list = document.getElementById('customPuzzleList');
-  if (state.customPuzzles.length === 0) {
-    list.innerHTML = '<div style="text-align:center;font-size:0.8rem;opacity:0.5;padding:0.75rem">No family puzzles yet — create one!</div>';
-    return;
+function setDirection(dir) {
+  state.direction = dir;
+  document.getElementById('btnAcross').classList.toggle('active', dir === 'across');
+  document.getElementById('btnDown').classList.toggle('active', dir === 'down');
+  if (state.selectedCell) {
+    highlightWord();
+    updateActiveClue();
   }
-  list.innerHTML = state.customPuzzles.map(p => `
-    <div class="custom-puzzle-item ${state.selectedCustomPuzzle?.id === p.id ? 'selected' : ''}" onclick="selectCustomPuzzle('${p.id}')">
-      <div>
-        <div class="pi-name">${p.title}</div>
-        <div class="pi-meta">${p.clues?.length || 0} clues</div>
-      </div>
-      <span>→</span>
-    </div>
-  `).join('');
 }
 
-function selectCustomPuzzle(id) {
-  state.selectedCustomPuzzle = state.customPuzzles.find(p => p.id === id);
-  renderCustomPuzzleList();
+function toggleClueDrawer() {
+  document.getElementById('clueDrawer').classList.toggle('open');
 }
 
-function importPuzzleFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const puzzle = JSON.parse(e.target.result);
-      // Save to Firebase
-      const ref = db.ref('custom_puzzles').push();
-      ref.set({ ...puzzle, imported: true }).then(() => {
-        showLobbyStatus('Puzzle imported!', 'success');
-        loadCustomPuzzles();
-      });
-    } catch {
-      showLobbyStatus('Invalid puzzle file', 'error');
-    }
-  };
-  reader.readAsText(file);
-}
+/* ═══════════ GAME FLOW ═══════════ */
 
-function showLobbyStatus(msg, type = 'info') {
-  const el = document.getElementById('lobbyStatus');
-  el.textContent = msg;
-  el.className = `status-msg ${type}`;
-  el.style.display = 'block';
-}
-
-async function joinRoom() {
-  const name = document.getElementById('playerName').value.trim();
-  const code = document.getElementById('roomCode').value.trim().toUpperCase();
-
-  if (!name) { showLobbyStatus('Enter your name', 'error'); return; }
-  if (!code) { showLobbyStatus('Enter a room code', 'error'); return; }
-  if (state.puzzleType === 'custom' && !state.selectedCustomPuzzle) {
-    showLobbyStatus('Select a family puzzle', 'error'); return;
-  }
-
-  state.playerName = name;
-  state.roomCode = code;
-
-  const btn = document.getElementById('joinBtn');
-  btn.disabled = true;
-  showLobbyStatus('Connecting...', 'info');
-
-  const roomRef = db.ref(`rooms/${code}`);
-  state.roomRef = roomRef;
-
-  const snap = await roomRef.once('value');
-  const room = snap.val();
-
-  if (!room) {
-    // Create room as P1
-    state.playerId = 'p1';
-    let puzzle = null;
-    if (state.puzzleType === 'custom') {
-      puzzle = state.selectedCustomPuzzle;
-    } else {
-      puzzle = await fetchRandomPuzzle();
-    }
-    if (!puzzle) {
-      showLobbyStatus('Failed to load puzzle. Try again.', 'error');
-      btn.disabled = false;
-      return;
-    }
-    await roomRef.set({
-      p1: { name, connected: true },
-      mode: state.mode,
-      puzzle,
-      cells: {},
-      scores: { p1: 0, p2: 0 },
-      status: 'waiting',
-      created: Date.now(),
-    });
-    showScreen('waiting');
-    listenRoom();
-  } else {
-    // Join as P2
-    if (room.p2) {
-      showLobbyStatus('Room is full!', 'error');
-      btn.disabled = false;
-      return;
-    }
-    state.playerId = 'p2';
-    state.mode = room.mode;
-    await roomRef.child('p2').set({ name, connected: true });
-    await roomRef.child('status').set('playing');
-    showScreen('waiting');
-    listenRoom();
-  }
-
-  btn.disabled = false;
-}
-
-// ===== SOLO MODE =====
-async function playSolo() {
-  const name = document.getElementById('playerName').value.trim() || 'Player';
-  if (state.puzzleType === 'custom' && !state.selectedCustomPuzzle) {
-    showLobbyStatus('Select a family puzzle first', 'error'); return;
-  }
-
-  const btn = document.getElementById('soloBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Loading puzzle...';
-
-  let puzzle = null;
-  if (state.puzzleType === 'custom') {
-    puzzle = state.selectedCustomPuzzle;
-  } else {
-    puzzle = await fetchRandomPuzzle();
-  }
-
-  if (!puzzle) {
-    showLobbyStatus('Failed to load puzzle. Try again.', 'error');
-    btn.disabled = false;
-    btn.textContent = '🧩 Play Solo';
-    return;
-  }
+function startGame() {
+  const name = document.getElementById('inputName').value.trim();
+  if (!name) { document.getElementById('inputName').focus(); return; }
 
   state.playerName = name;
   state.playerId = 'solo';
   state.mode = 'solo';
-  state.puzzle = puzzle;
-  state.roomRef = null;
-  state.gameComplete = false;
 
-  // Show/hide appropriate score elements
-  document.getElementById('scoreP1').style.display = 'none';
-  document.getElementById('scoreP2').style.display = 'none';
-  document.getElementById('scoreSolo').style.display = 'block';
-
-  const modeBadge = document.getElementById('modeBadge');
-  modeBadge.textContent = '🧩 Solo';
-  modeBadge.className = 'game-mode-badge solo';
-
-  document.getElementById('gameTitle').textContent = puzzle.title || "Maria's Word Vault";
-
-  state.clues = puzzle.clues;
-  state.answers = puzzle.answers || {};
-
-  buildGrid(puzzle);
-  buildCluePanel();
-  startTimer(Date.now());
-  showScreen('game');
-
-  btn.disabled = false;
-  btn.textContent = '🧩 Play Solo';
-}
-async function fetchRandomPuzzle() {
-  try {
-    // Shadify API - free, no key needed
-    const res = await fetch('https://shadify.dev/api/crossword/generator?width=10&height=10');
-    if (!res.ok) throw new Error('API failed');
-    const data = await res.json();
-    return convertShadifyPuzzle(data);
-  } catch (e) {
-    console.warn('Shadify failed, using fallback puzzle', e);
-    return getFallbackPuzzle();
+  let puzzle;
+  if (state.puzzleType === 'custom') {
+    const sel = document.getElementById('customPuzzleSelect');
+    const id = sel.value;
+    if (!id) { alert('Pick a family puzzle!'); return; }
+    const found = state.customPuzzles.find(p => p.id === id);
+    if (found) {
+      puzzle = found;
+    } else {
+      puzzle = getRandomPuzzle();
+    }
+  } else {
+    puzzle = getRandomPuzzle();
   }
+
+  state.puzzle = puzzle;
+  initGame();
 }
 
-function convertShadifyPuzzle(data) {
-  // Shadify returns: task (grid with letters/symbols), words, positions
-  // Convert to our format
-  const grid = data.task || [];
-  const words = data.words || [];
-  
-  const clues = { across: [], down: [] };
-  const answers = {};
-  
-  let clueNum = 1;
-  const numberedCells = {};
+function createRoom() {
+  const name = document.getElementById('inputName').value.trim();
+  if (!name) { document.getElementById('inputName').focus(); return; }
 
-  // Build clue numbers based on word positions
-  words.forEach(w => {
-    const key = `${w.y},${w.x}`;
-    if (!numberedCells[key]) {
-      numberedCells[key] = clueNum++;
-    }
-    const num = numberedCells[key];
-    const dir = w.vertical ? 'down' : 'across';
-    answers[`${dir}_${num}`] = w.word;
-    clues[dir].push({
-      number: num,
-      clue: generateClue(w.word),
-      answer: w.word,
-      row: w.y,
-      col: w.x,
-      dir,
-    });
+  state.playerName = name;
+  state.playerId = 'p1';
+  state.roomCode = generateRoomCode();
+
+  let puzzle;
+  if (state.puzzleType === 'custom') {
+    const sel = document.getElementById('customPuzzleSelect');
+    const id = sel.value;
+    const found = state.customPuzzles.find(p => p.id === id);
+    puzzle = found || getRandomPuzzle();
+  } else {
+    puzzle = getRandomPuzzle();
+  }
+
+  state.puzzle = puzzle;
+
+  const roomRef = db.ref('rooms/' + state.roomCode);
+  state.roomRef = roomRef;
+
+  roomRef.set({
+    p1: { name: state.playerName, connected: true },
+    p2: { name: '', connected: false },
+    mode: state.mode,
+    puzzle: puzzle,
+    cells: {},
+    scores: { p1: 0, p2: 0 },
+    cursors: {},
+    status: 'waiting',
+    timerStart: null,
+    created: firebase.database.ServerValue.TIMESTAMP
   });
 
-  return {
-    source: 'shadify',
-    title: 'Daily Puzzle',
-    gridData: grid,
-    clues,
-    answers,
-    numberedCells,
-  };
-}
+  // Show waiting screen
+  document.getElementById('waitingRoomCode').textContent = state.roomCode;
+  const shareLink = `${window.location.origin}${window.location.pathname}?room=${state.roomCode}`;
+  document.getElementById('shareUrl').textContent = shareLink;
+  document.getElementById('slotP1Name').textContent = state.playerName;
+  showScreen('screenWaiting');
 
-// Simple clue generator (placeholder — you'd replace with real clues or API)
-function generateClue(word) {
-  const clueBank = {
-    // Common words with clues
-    CAT: 'Feline friend', DOG: 'Loyal companion', SUN: 'Star of our solar system',
-    RUN: 'Move quickly on foot', FLY: 'Travel by air', BIG: 'Large in size',
-    RED: 'Color of roses', BLUE: 'Color of the sky', GREEN: 'Color of grass',
-    // ... fallback
-  };
-  return clueBank[word.toUpperCase()] || `${word.length}-letter word`;
-}
-
-function getFallbackPuzzle() {
-  // Hardcoded 7x7 fallback puzzle
-  const rawGrid = [
-    ['C','A','T',  '#','D','O','G'],
-    ['#','#','R',  '#','#','#','#'],
-    ['S','U','N',  '#','B','I','G'],
-    ['#','#','G',  '#','#','#','#'],
-    ['R','E','D',  '#','#','#','#'],
-    ['#','#','#',  '#','#','#','#'],
-    ['B','L','U',  'E','#','#','#'],
-  ];
-  return {
-    source: 'fallback',
-    title: 'Sample Puzzle',
-    gridData: rawGrid,
-    clues: {
-      across: [
-        { number:1, clue:'Feline companion', answer:'CAT', row:0, col:0, dir:'across' },
-        { number:4, clue:'Loyal four-legged friend', answer:'DOG', row:0, col:4, dir:'across' },
-        { number:5, clue:'Our star', answer:'SUN', row:2, col:0, dir:'across' },
-        { number:6, clue:'Enormous', answer:'BIG', row:2, col:4, dir:'across' },
-        { number:7, clue:'Color of stop signs', answer:'RED', row:4, col:0, dir:'across' },
-        { number:8, clue:'Sky color', answer:'BLUE', row:6, col:0, dir:'across' },
-      ],
-      down: [
-        { number:1, clue:'Singer and songwriter', answer:'CSRB', row:0, col:0, dir:'down' },
-        { number:2, clue:'Tropical tree', answer:'ATNEL', row:0, col:1, dir:'down' },
-        { number:3, clue:'Outdoor activity involving poles', answer:'TRUNGL', row:0, col:2, dir:'down' },
-        { number:4, clue:'Canine breed abbrev.', answer:'DSAR', row:0, col:4, dir:'down' },
-      ]
-    },
-    answers: {
-      across_1:'CAT', across_4:'DOG', across_5:'SUN', across_6:'BIG',
-      across_7:'RED', across_8:'BLUE',
-    }
-  };
-}
-
-// ===== ROOM LISTENING =====
-function listenRoom() {
-  const roomRef = state.roomRef;
-
-  roomRef.child('status').on('value', snap => {
-    const status = snap.val();
-    if (status === 'playing') {
-      roomRef.once('value').then(s => {
-        const room = s.val();
-        state.puzzle = room.puzzle;
-        state.mode = room.mode;
-        initGame(room);
-        showScreen('game');
-      });
-    }
-  });
-
-  // Listen for cell updates
-  roomRef.child('cells').on('value', snap => {
-    const cells = snap.val() || {};
-    updateGridFromFirebase(cells);
-    checkCompletion();
-  });
-
-  // Listen for scores
-  roomRef.child('scores').on('value', snap => {
-    const scores = snap.val() || { p1:0, p2:0 };
-    state.scores = scores;
-    updateScoreDisplay();
-  });
-
-  // Listen for player cursors
-  roomRef.child('cursors').on('value', snap => {
-    const cursors = snap.val() || {};
-    updateCursors(cursors);
-  });
-
-  // Listen for p2 joining (if we're p1 in waiting)
+  // Listen for p2
   roomRef.child('p2').on('value', snap => {
     const p2 = snap.val();
-    if (p2 && state.playerId === 'p1') {
-      document.getElementById('slot2').classList.add('filled');
-      document.getElementById('slot2').querySelector('.slot-name').textContent = p2.name;
-      document.getElementById('slot2').querySelector('.slot-status').textContent = '✓ In room';
-      // Mark game as playing
-      roomRef.child('status').set('playing');
-      roomRef.child('timerStart').set(Date.now());
+    if (p2 && p2.connected) {
+      document.getElementById('slotP2').classList.add('connected');
+      document.getElementById('slotP2Name').textContent = p2.name;
+      // Start game
+      roomRef.update({ status: 'playing', timerStart: firebase.database.ServerValue.TIMESTAMP });
+      initGame();
     }
   });
 }
 
-// ===== GAME INIT =====
-function initGame(room) {
-  const puzzle = state.puzzle;
-  state.clues = puzzle.clues;
-  state.answers = puzzle.answers || {};
+function joinRoom() {
+  const name = document.getElementById('inputName').value.trim();
+  const code = document.getElementById('inputRoom').value.trim().toUpperCase();
+  if (!name) { document.getElementById('inputName').focus(); return; }
+  if (!code || code.length < 4) { document.getElementById('inputRoom').focus(); return; }
+
+  state.playerName = name;
+  state.roomCode = code;
+  state.playerId = 'p2';
+
+  const roomRef = db.ref('rooms/' + code);
+  state.roomRef = roomRef;
+
+  roomRef.once('value').then(snap => {
+    if (!snap.exists()) {
+      alert('Room not found!');
+      return;
+    }
+    const room = snap.val();
+    state.mode = room.mode;
+    state.puzzle = room.puzzle;
+
+    roomRef.child('p2').set({ name: state.playerName, connected: true });
+
+    // Listen for status change
+    roomRef.child('status').on('value', snap => {
+      if (snap.val() === 'playing') {
+        initGame();
+      }
+    });
+
+    // Show waiting briefly
+    document.getElementById('waitingRoomCode').textContent = code;
+    document.getElementById('slotP1Name').textContent = room.p1.name;
+    document.getElementById('slotP2Name').textContent = state.playerName;
+    document.getElementById('slotP2').classList.add('connected');
+    showScreen('screenWaiting');
+  });
+}
+
+function generateRoomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  let code = '';
+  for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+function copyShareUrl() {
+  const text = document.getElementById('shareUrl').textContent;
+  navigator.clipboard?.writeText(text);
+  document.getElementById('shareUrl').textContent = '✓ Copied!';
+  setTimeout(() => {
+    document.getElementById('shareUrl').textContent = text;
+  }, 2000);
+}
+
+/* ═══════════ INIT GAME ═══════════ */
+
+function initGame() {
   state.gameComplete = false;
+  state.scores = { p1: 0, p2: 0 };
+  state.selectedCell = null;
+  state.direction = 'across';
 
-  // Player names in header
-  document.getElementById('scoreP1Name').textContent = room.p1?.name || 'P1';
-  document.getElementById('scoreP2Name').textContent = room.p2?.name || 'P2';
+  const puzzle = state.puzzle;
+  const gridData = puzzle.gridData;
+  const rows = gridData.length;
+  const cols = gridData[0].length;
 
-  const modeBadge = document.getElementById('modeBadge');
-  modeBadge.textContent = state.mode === 'competitive' ? '⚡ Competitive' : '🤝 Collaborative';
-  modeBadge.className = `game-mode-badge ${state.mode}`;
-
-  document.getElementById('gameTitle').textContent = puzzle.title || "Maria's Word Vault";
-
-  buildGrid(puzzle);
-  buildCluePanel();
-  startTimer(room.timerStart);
-}
-
-function buildGrid(puzzle) {
-  const rawGrid = puzzle.gridData;
-  if (!rawGrid || rawGrid.length === 0) return;
-
-  const rows = rawGrid.length;
-  const cols = rawGrid[0].length;
+  // Build internal grid
   state.grid = [];
-
-  const gridEl = document.getElementById('crosswordGrid');
-  gridEl.innerHTML = '';
-  gridEl.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size))`;
-  gridEl.style.gridTemplateRows = `repeat(${rows}, var(--cell-size))`;
-
-  // Determine numbered cells from clues
-  const clueNums = {};
-  [...(state.clues.across||[]), ...(state.clues.down||[])].forEach(c => {
-    clueNums[`${c.row},${c.col}`] = c.number;
-  });
-
-  // Build answer maps so we know which cells belong to which word
-  const cellWords = {}; // "r,c" -> {across: "across_N", down: "down_N"}
-  state.clues.across?.forEach(c => {
-    for (let i = 0; i < c.answer.length; i++) {
-      const key = `${c.row},${c.col+i}`;
-      if (!cellWords[key]) cellWords[key] = {};
-      cellWords[key].across = `across_${c.number}`;
-    }
-  });
-  state.clues.down?.forEach(c => {
-    for (let i = 0; i < c.answer.length; i++) {
-      const key = `${c.row+i},${c.col}`;
-      if (!cellWords[key]) cellWords[key] = {};
-      cellWords[key].down = `down_${c.number}`;
-    }
-  });
-
   for (let r = 0; r < rows; r++) {
     state.grid[r] = [];
     for (let c = 0; c < cols; c++) {
-      const raw = rawGrid[r][c];
-      const isBlack = (raw === '#' || raw === '*' || raw === '.' || raw === null || raw === '');
-      const key = `${r},${c}`;
-      const cellData = {
-        row: r, col: c,
-        black: isBlack,
-        answer: isBlack ? '' : (typeof raw === 'string' ? raw.toUpperCase() : ''),
-        number: clueNums[key] || null,
-        wordAcross: cellWords[key]?.across || null,
-        wordDown: cellWords[key]?.down || null,
-        filled: { p1: '', p2: '' },
+      const isBlack = gridData[r][c] === '#';
+      state.grid[r][c] = {
+        letter: isBlack ? '#' : gridData[r][c],
+        isBlack,
+        number: null,
+        filled: { shared: '', p1: '', p2: '' },
+        acrossClue: null,
+        downClue: null,
       };
-      state.grid[r][c] = cellData;
+    }
+  }
 
+  // Assign clue numbers to cells
+  state.clues = puzzle.clues;
+  for (const dir of ['across', 'down']) {
+    for (const clue of state.clues[dir]) {
+      if (state.grid[clue.row] && state.grid[clue.row][clue.col]) {
+        state.grid[clue.row][clue.col].number = clue.number;
+      }
+    }
+  }
+
+  // Map cells to their clues
+  for (const clue of state.clues.across) {
+    for (let i = 0; i < clue.answer.length; i++) {
+      const c = clue.col + i;
+      if (state.grid[clue.row] && state.grid[clue.row][c]) {
+        state.grid[clue.row][c].acrossClue = clue;
+      }
+    }
+  }
+  for (const clue of state.clues.down) {
+    for (let i = 0; i < clue.answer.length; i++) {
+      const r = clue.row + i;
+      if (state.grid[r] && state.grid[r][clue.col]) {
+        state.grid[r][clue.col].downClue = clue;
+      }
+    }
+  }
+
+  state.answers = puzzle.answers;
+
+  // Build DOM
+  buildGrid(rows, cols);
+  buildCluePanel();
+
+  // Calculate cell size
+  calcAndSetCellSize(rows, cols);
+
+  // Timer
+  state.timerStart = Date.now();
+  clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(updateTimer, 1000);
+
+  // Show game screen
+  showScreen('screenGame');
+
+  // Update HUD
+  updateHUD();
+
+  // Setup Firebase listeners for multiplayer
+  if (state.mode !== 'solo' && state.roomRef) {
+    listenRoom();
+  }
+
+  // Listen for window resize
+  window.addEventListener('resize', () => calcAndSetCellSize(rows, cols));
+}
+
+function calcAndSetCellSize(rows, cols) {
+  const wrapper = document.getElementById('gridWrapper');
+  const availW = wrapper.clientWidth - 16;
+  const availH = wrapper.clientHeight - 16;
+  const byWidth = Math.floor(availW / cols);
+  const byHeight = Math.floor(availH / rows);
+  const cellSize = Math.min(byWidth, byHeight, 56);
+  document.getElementById('crosswordGrid').style.setProperty('--cell-size', cellSize + 'px');
+}
+
+/* ═══════════ BUILD GRID ═══════════ */
+
+function buildGrid(rows, cols) {
+  const grid = document.getElementById('crosswordGrid');
+  grid.innerHTML = '';
+  grid.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size))`;
+  grid.style.gridTemplateRows = `repeat(${rows}, var(--cell-size))`;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
       const cell = document.createElement('div');
-      cell.className = `cell ${isBlack ? 'black' : 'white'}`;
-      cell.id = `cell-${r}-${c}`;
-      cell.setAttribute('data-row', r);
-      cell.setAttribute('data-col', c);
-      if (!isBlack) cell.onclick = () => handleCellClick(r, c);
+      cell.className = 'grid-cell';
+      cell.dataset.row = r;
+      cell.dataset.col = c;
 
-      if (cellData.number) {
-        const num = document.createElement('div');
-        num.className = 'cell-number';
-        num.textContent = cellData.number;
-        cell.appendChild(num);
+      const data = state.grid[r][c];
+
+      if (data.isBlack) {
+        cell.classList.add('black');
+      } else {
+        // Number
+        if (data.number) {
+          const numEl = document.createElement('span');
+          numEl.className = 'cell-number';
+          numEl.textContent = data.number;
+          cell.appendChild(numEl);
+        }
+
+        // Letter display
+        const letterEl = document.createElement('span');
+        letterEl.className = 'cell-letter';
+        letterEl.id = `letter_${r}_${c}`;
+        cell.appendChild(letterEl);
+
+        // Click handler
+        cell.addEventListener('click', () => handleCellClick(r, c));
+        cell.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          handleCellClick(r, c);
+        });
       }
 
-      const letter = document.createElement('div');
-      letter.className = 'cell-letter';
-      cell.appendChild(letter);
-
-      gridEl.appendChild(cell);
+      grid.appendChild(cell);
     }
   }
 }
 
+/* ═══════════ BUILD CLUE PANEL ═══════════ */
+
 function buildCluePanel() {
-  const panel = document.getElementById('clueSections');
-  let html = '';
-
-  if (state.clues.across?.length) {
-    html += '<div class="clue-section"><h3>Across</h3>';
-    state.clues.across.sort((a,b) => a.number - b.number).forEach(c => {
-      html += `<div class="clue-item" id="clue-across-${c.number}" onclick="jumpToClue('across',${c.number})">
-        <span class="clue-num">${c.number}</span>
-        <span>${c.clue}</span>
-      </div>`;
-    });
-    html += '</div>';
+  for (const dir of ['across', 'down']) {
+    const container = document.getElementById(dir === 'across' ? 'clueListAcross' : 'clueListDown');
+    container.innerHTML = '';
+    for (const clue of state.clues[dir]) {
+      const item = document.createElement('div');
+      item.className = 'clue-item';
+      item.id = `clue_${dir}_${clue.number}`;
+      item.innerHTML = `
+        <span class="clue-item-num">${clue.number}</span>
+        <span class="clue-item-text">${clue.clue}</span>
+      `;
+      item.addEventListener('click', () => {
+        state.direction = dir;
+        document.getElementById('btnAcross').classList.toggle('active', dir === 'across');
+        document.getElementById('btnDown').classList.toggle('active', dir === 'down');
+        handleCellClick(clue.row, clue.col);
+        document.getElementById('clueDrawer').classList.remove('open');
+      });
+      container.appendChild(item);
+    }
   }
-
-  if (state.clues.down?.length) {
-    html += '<div class="clue-section" style="margin-top:1rem"><h3>Down</h3>';
-    state.clues.down.sort((a,b) => a.number - b.number).forEach(c => {
-      html += `<div class="clue-item" id="clue-down-${c.number}" onclick="jumpToClue('down',${c.number})">
-        <span class="clue-num">${c.number}</span>
-        <span>${c.clue}</span>
-      </div>`;
-    });
-    html += '</div>';
-  }
-
-  panel.innerHTML = html;
 }
 
-// ===== INTERACTION =====
-function handleCellClick(r, c) {
-  const cell = state.grid[r][c];
-  if (cell.black) return;
+/* ═══════════ CELL INTERACTION ═══════════ */
 
-  // Toggle direction if clicking same cell
-  if (state.selectedCell?.row === r && state.selectedCell?.col === c) {
+function handleCellClick(r, c) {
+  if (state.grid[r][c].isBlack) return;
+
+  // If clicking the same cell, toggle direction
+  if (state.selectedCell && state.selectedCell.row === r && state.selectedCell.col === c) {
     state.direction = state.direction === 'across' ? 'down' : 'across';
-  } else {
-    state.selectedCell = { row: r, col: c };
-    // Auto-pick direction: if cell only has one word, use that
-    if (cell.wordAcross && !cell.wordDown) state.direction = 'across';
-    else if (!cell.wordAcross && cell.wordDown) state.direction = 'down';
+    document.getElementById('btnAcross').classList.toggle('active', state.direction === 'across');
+    document.getElementById('btnDown').classList.toggle('active', state.direction === 'down');
   }
 
+  state.selectedCell = { row: r, col: c };
   highlightWord();
-  showActiveClue();
+  updateActiveClue();
+  focusHiddenInput();
 
-  // Broadcast cursor
-  state.roomRef?.child(`cursors/${state.playerId}`).set({ row: r, col: c });
+  // Sync cursor to Firebase
+  if (state.roomRef) {
+    state.roomRef.child(`cursors/${state.playerId}`).set({ row: r, col: c });
+  }
 }
 
 function highlightWord() {
   // Clear all highlights
-  document.querySelectorAll('.cell').forEach(el => {
-    el.classList.remove('selected', 'highlighted');
+  document.querySelectorAll('.grid-cell').forEach(el => {
+    el.classList.remove('selected', 'word-highlight');
   });
 
-  const { row, col } = state.selectedCell || {};
-  if (row === undefined) return;
+  if (!state.selectedCell) return;
 
-  const cell = state.grid[row][col];
-  const wordKey = state.direction === 'across' ? cell.wordAcross : cell.wordDown;
+  const { row, col } = state.selectedCell;
+  const dir = state.direction;
+  const cellData = state.grid[row][col];
+  const clue = dir === 'across' ? cellData.acrossClue : cellData.downClue;
 
-  if (wordKey) {
-    // Find all cells in this word and highlight
-    for (let r = 0; r < state.grid.length; r++) {
-      for (let c = 0; c < state.grid[r].length; c++) {
-        const gc = state.grid[r][c];
-        if ((state.direction === 'across' && gc.wordAcross === wordKey) ||
-            (state.direction === 'down' && gc.wordDown === wordKey)) {
-          const el = document.getElementById(`cell-${r}-${c}`);
-          el?.classList.add('highlighted');
-        }
-      }
+  // If no clue in this direction, try the other
+  if (!clue) {
+    const altClue = dir === 'across' ? cellData.downClue : cellData.acrossClue;
+    if (altClue) {
+      state.direction = dir === 'across' ? 'down' : 'across';
+      document.getElementById('btnAcross').classList.toggle('active', state.direction === 'across');
+      document.getElementById('btnDown').classList.toggle('active', state.direction === 'down');
+      highlightWord();
+      return;
     }
   }
 
-  document.getElementById(`cell-${row}-${col}`)?.classList.add('selected');
-}
-
-function showActiveClue() {
-  const { row, col } = state.selectedCell || {};
-  if (row === undefined) return;
-
-  const cell = state.grid[row][col];
-  const wordKey = state.direction === 'across' ? cell.wordAcross : cell.wordDown;
-  if (!wordKey) return;
-
-  const [dir, numStr] = wordKey.split('_');
-  const num = parseInt(numStr);
-  const clueObj = state.clues[dir]?.find(c => c.number === num);
-
-  document.getElementById('activeClueNum').textContent = `${num} ${dir.charAt(0).toUpperCase()+dir.slice(1)}`;
-  document.getElementById('activeClueText').textContent = clueObj?.clue || '—';
-
-  // Highlight in panel
-  document.querySelectorAll('.clue-item').forEach(el => el.classList.remove('active'));
-  document.getElementById(`clue-${dir}-${num}`)?.classList.add('active');
-  document.getElementById(`clue-${dir}-${num}`)?.scrollIntoView({ block: 'nearest' });
-}
-
-function jumpToClue(dir, num) {
-  const clueObj = state.clues[dir]?.find(c => c.number === num);
-  if (!clueObj) return;
-  state.selectedCell = { row: clueObj.row, col: clueObj.col };
-  state.direction = dir;
-  highlightWord();
-  showActiveClue();
-  document.getElementById(`cell-${clueObj.row}-${clueObj.col}`)?.scrollIntoView({ block:'center' });
-}
-
-// ===== KEYBOARD =====
-document.addEventListener('keydown', e => {
-  if (!state.selectedCell || state.gameComplete) return;
-
-  const { row, col } = state.selectedCell;
-
-  if (e.key === 'Backspace' || e.key === 'Delete') {
-    e.preventDefault();
-    setLetter(row, col, '');
-    moveCursor(-1);
-    return;
+  if (clue) {
+    // Highlight all cells in this word
+    for (let i = 0; i < clue.answer.length; i++) {
+      const cr = clue.dir === 'across' ? clue.row : clue.row + i;
+      const cc = clue.dir === 'across' ? clue.col + i : clue.col;
+      const el = getCellElement(cr, cc);
+      if (el) el.classList.add('word-highlight');
+    }
   }
 
-  if (e.key === 'ArrowRight') { state.direction = 'across'; moveToNextCell(row, col, 0, 1); return; }
-  if (e.key === 'ArrowLeft') { state.direction = 'across'; moveToNextCell(row, col, 0, -1); return; }
-  if (e.key === 'ArrowDown') { state.direction = 'down'; moveToNextCell(row, col, 1, 0); return; }
-  if (e.key === 'ArrowUp') { state.direction = 'down'; moveToNextCell(row, col, -1, 0); return; }
+  // Highlight active cell
+  const activeEl = getCellElement(row, col);
+  if (activeEl) activeEl.classList.add('selected');
+}
 
+function updateActiveClue() {
+  if (!state.selectedCell) return;
+  const { row, col } = state.selectedCell;
+  const cellData = state.grid[row][col];
+  const clue = state.direction === 'across' ? cellData.acrossClue : cellData.downClue;
+
+  if (clue) {
+    document.getElementById('activeClueNum').textContent = `${clue.number} ${clue.dir === 'across' ? 'A' : 'D'}`;
+    document.getElementById('activeClueText').textContent = clue.clue;
+  }
+}
+
+function getCellElement(r, c) {
+  return document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`);
+}
+
+function focusHiddenInput() {
+  const input = document.getElementById('hiddenInput');
+  input.value = '';
+  input.focus({ preventScroll: true });
+}
+
+/* ═══════════ KEYBOARD INPUT ═══════════ */
+
+// Desktop: keydown on document
+document.addEventListener('keydown', handleKeydown);
+
+// Mobile: input event on hidden input
+document.getElementById('hiddenInput').addEventListener('input', (e) => {
+  const val = e.target.value;
+  if (val && val.length > 0) {
+    const letter = val.slice(-1).toUpperCase();
+    if (/^[A-Z]$/.test(letter)) {
+      typeLetter(letter);
+    }
+    e.target.value = '';
+  }
+});
+
+// Also handle backspace via keydown on the hidden input
+document.getElementById('hiddenInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Backspace') {
+    e.preventDefault();
+    handleBackspace();
+  }
+});
+
+function handleKeydown(e) {
+  if (!state.selectedCell) return;
+  // Don't capture if focused on a form input other than hiddenInput
+  if (document.activeElement && document.activeElement.tagName === 'INPUT' && document.activeElement.id !== 'hiddenInput') return;
+
+  if (e.key === 'ArrowUp') { e.preventDefault(); moveSelection(0, -1); return; }
+  if (e.key === 'ArrowDown') { e.preventDefault(); moveSelection(0, 1); return; }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); moveSelection(-1, 0); return; }
+  if (e.key === 'ArrowRight') { e.preventDefault(); moveSelection(1, 0); return; }
   if (e.key === 'Tab') {
     e.preventDefault();
-    advanceToNextWord(e.shiftKey);
+    state.direction = state.direction === 'across' ? 'down' : 'across';
+    document.getElementById('btnAcross').classList.toggle('active', state.direction === 'across');
+    document.getElementById('btnDown').classList.toggle('active', state.direction === 'down');
+    highlightWord();
+    updateActiveClue();
+    return;
+  }
+  if (e.key === 'Backspace' || e.key === 'Delete') {
+    e.preventDefault();
+    handleBackspace();
+    return;
+  }
+  if (e.key === ' ') {
+    e.preventDefault();
+    // Toggle direction like NYT
+    state.direction = state.direction === 'across' ? 'down' : 'across';
+    document.getElementById('btnAcross').classList.toggle('active', state.direction === 'across');
+    document.getElementById('btnDown').classList.toggle('active', state.direction === 'down');
+    highlightWord();
+    updateActiveClue();
     return;
   }
 
   const letter = e.key.toUpperCase();
   if (/^[A-Z]$/.test(letter)) {
     e.preventDefault();
-    setLetter(row, col, letter);
-    moveCursor(1);
+    typeLetter(letter);
   }
-});
+}
+
+function typeLetter(letter) {
+  if (!state.selectedCell || state.gameComplete) return;
+  const { row, col } = state.selectedCell;
+
+  setLetter(row, col, letter);
+  advanceCursor();
+}
+
+function handleBackspace() {
+  if (!state.selectedCell || state.gameComplete) return;
+  const { row, col } = state.selectedCell;
+
+  // If current cell has a letter, delete it
+  const currentLetter = getDisplayedLetter(row, col);
+  if (currentLetter) {
+    setLetter(row, col, '');
+  } else {
+    // Move back first, then delete
+    retreatCursor();
+    if (state.selectedCell) {
+      const { row: nr, col: nc } = state.selectedCell;
+      setLetter(nr, nc, '');
+    }
+  }
+}
+
+function getDisplayedLetter(r, c) {
+  if (state.mode === 'solo') {
+    return state.grid[r][c].filled.shared || '';
+  } else if (state.mode === 'collaborative') {
+    return state.grid[r][c].filled.shared || '';
+  } else {
+    return state.grid[r][c].filled[state.playerId] || '';
+  }
+}
 
 function setLetter(row, col, letter) {
-  const pid = state.playerId;
-
-  // Solo mode — update local grid only, no Firebase
   if (state.mode === 'solo') {
-    state.grid[row][col].filled = { shared: letter };
-    const cellEl = document.getElementById(`cell-${row}-${col}`);
-    if (cellEl) cellEl.querySelector('.cell-letter').textContent = letter;
-    updateSolvedClues();
+    state.grid[row][col].filled.shared = letter;
+    updateCellDisplay(row, col);
     checkCompletion();
-    return;
-  }
-
-  const firebasePath = `${row}_${col}`;
-  const cellRef = state.roomRef?.child(`cells/${firebasePath}`);
-
-  if (letter === '') {
-    if (state.mode === 'competitive') {
-      cellRef?.child(pid).set('');
+  } else if (state.roomRef) {
+    const cellKey = `${row}_${col}`;
+    if (state.mode === 'collaborative') {
+      state.roomRef.child(`cells/${cellKey}`).set({
+        letter: letter,
+        owner: state.playerId
+      });
     } else {
-      cellRef?.set({ letter: '', owner: pid });
+      // Competitive
+      state.roomRef.child(`cells/${cellKey}/${state.playerId}`).set(letter);
     }
+    // Also update local for immediate feedback
+    if (state.mode === 'competitive') {
+      state.grid[row][col].filled[state.playerId] = letter;
+    } else {
+      state.grid[row][col].filled.shared = letter;
+    }
+    updateCellDisplay(row, col);
+    checkCompletion();
+  }
+}
+
+function updateCellDisplay(r, c) {
+  const el = document.getElementById(`letter_${r}_${c}`);
+  if (!el) return;
+
+  let letter;
+  if (state.mode === 'competitive') {
+    letter = state.grid[r][c].filled[state.playerId] || '';
   } else {
-    if (state.mode === 'competitive') {
-      cellRef?.child(pid).set(letter);
-    } else {
-      cellRef?.set({ letter, owner: pid });
-    }
+    letter = state.grid[r][c].filled.shared || '';
   }
+  el.textContent = letter;
 }
 
-function moveCursor(delta) {
+function advanceCursor() {
   if (!state.selectedCell) return;
-  const { row, col } = state.selectedCell;
-  const dr = state.direction === 'down' ? delta : 0;
-  const dc = state.direction === 'across' ? delta : 0;
-  moveToNextCell(row, col, dr, dc);
-}
+  let { row, col } = state.selectedCell;
+  const rows = state.grid.length;
+  const cols = state.grid[0].length;
 
-function moveToNextCell(row, col, dr, dc) {
-  let r = row + dr, c = col + dc;
-  while (r >= 0 && r < state.grid.length && c >= 0 && c < (state.grid[r]?.length || 0)) {
-    if (!state.grid[r][c].black) {
-      state.selectedCell = { row: r, col: c };
-      highlightWord();
-      showActiveClue();
-      document.getElementById(`cell-${r}-${c}`)?.scrollIntoView({ block:'nearest' });
-      state.roomRef?.child(`cursors/${state.playerId}`).set({ row: r, col: c });
-      return;
-    }
-    r += dr; c += dc;
+  if (state.direction === 'across') {
+    col++;
+    while (col < cols && state.grid[row][col].isBlack) col++;
+    if (col >= cols) return;
+  } else {
+    row++;
+    while (row < rows && state.grid[row][col].isBlack) row++;
+    if (row >= rows) return;
+  }
+
+  state.selectedCell = { row, col };
+  highlightWord();
+  updateActiveClue();
+
+  if (state.roomRef) {
+    state.roomRef.child(`cursors/${state.playerId}`).set({ row, col });
   }
 }
 
-function advanceToNextWord(reverse = false) {
-  const allClues = [
-    ...(state.clues.across||[]).map(c => ({ ...c, dir:'across' })),
-    ...(state.clues.down||[]).map(c => ({ ...c, dir:'down' })),
-  ].sort((a,b) => a.number - b.number || (a.dir === 'across' ? -1 : 1));
+function retreatCursor() {
+  if (!state.selectedCell) return;
+  let { row, col } = state.selectedCell;
 
-  const curKey = state.selectedCell ? 
-    (() => {
-      const c = state.grid[state.selectedCell.row][state.selectedCell.col];
-      const wk = state.direction === 'across' ? c.wordAcross : c.wordDown;
-      return wk;
-    })() : null;
+  if (state.direction === 'across') {
+    col--;
+    while (col >= 0 && state.grid[row][col].isBlack) col--;
+    if (col < 0) return;
+  } else {
+    row--;
+    while (row >= 0 && state.grid[row][col].isBlack) row--;
+    if (row < 0) return;
+  }
 
-  let idx = curKey ? allClues.findIndex(c => `${c.dir}_${c.number}` === curKey) : -1;
-  idx = (idx + (reverse ? -1 : 1) + allClues.length) % allClues.length;
-  const next = allClues[idx];
-  if (next) jumpToClue(next.dir, next.number);
+  state.selectedCell = { row, col };
+  highlightWord();
+  updateActiveClue();
 }
 
-// ===== FIREBASE SYNC =====
+function moveSelection(dx, dy) {
+  if (!state.selectedCell) return;
+  let { row, col } = state.selectedCell;
+  const rows = state.grid.length;
+  const cols = state.grid[0].length;
+
+  // dx maps to col, dy maps to row
+  let nr = row + dy;
+  let nc = col + dx;
+
+  // Skip black cells
+  while (nr >= 0 && nr < rows && nc >= 0 && nc < cols && state.grid[nr][nc].isBlack) {
+    nr += dy; nc += dx;
+  }
+
+  if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !state.grid[nr][nc].isBlack) {
+    state.selectedCell = { row: nr, col: nc };
+    // Set direction based on arrow key
+    if (dx !== 0) state.direction = 'across';
+    if (dy !== 0) state.direction = 'down';
+    document.getElementById('btnAcross').classList.toggle('active', state.direction === 'across');
+    document.getElementById('btnDown').classList.toggle('active', state.direction === 'down');
+    highlightWord();
+    updateActiveClue();
+    focusHiddenInput();
+  }
+}
+
+/* ═══════════ FIREBASE LISTENERS ═══════════ */
+
+function listenRoom() {
+  if (!state.roomRef) return;
+
+  // Listen for cell changes
+  const cellListener = state.roomRef.child('cells').on('value', snap => {
+    const cells = snap.val();
+    if (!cells) return;
+    updateGridFromFirebase(cells);
+    checkCompletion();
+  });
+
+  // Listen for peer cursor
+  const peerId = state.playerId === 'p1' ? 'p2' : 'p1';
+  const cursorListener = state.roomRef.child(`cursors/${peerId}`).on('value', snap => {
+    const cursor = snap.val();
+    // Clear old peer cursors
+    document.querySelectorAll('.peer-cursor').forEach(el => el.classList.remove('peer-cursor'));
+    if (cursor) {
+      const el = getCellElement(cursor.row, cursor.col);
+      if (el) el.classList.add('peer-cursor');
+    }
+  });
+
+  // Listen for scores
+  const scoreListener = state.roomRef.child('scores').on('value', snap => {
+    const scores = snap.val();
+    if (scores) {
+      state.scores = scores;
+      updateHUD();
+    }
+  });
+}
+
 function updateGridFromFirebase(cells) {
-  Object.entries(cells).forEach(([key, val]) => {
+  for (const key of Object.keys(cells)) {
     const [r, c] = key.split('_').map(Number);
-    if (!state.grid[r]?.[c]) return;
+    if (!state.grid[r] || !state.grid[r][c]) continue;
 
-    const cellEl = document.getElementById(`cell-${r}-${c}`);
-    if (!cellEl) return;
-
-    const letterEl = cellEl.querySelector('.cell-letter');
-
-    if (state.mode === 'competitive') {
-      // val = { p1: 'A', p2: 'B' }
-      state.grid[r][c].filled = val || {};
-      const myLetter = val?.[state.playerId] || '';
-      const otherLetter = val?.[state.playerId === 'p1' ? 'p2' : 'p1'] || '';
-      // Show own letter, or other player's if cell is empty for me
-      letterEl.textContent = myLetter || otherLetter;
-      cellEl.classList.remove('filled-p1','filled-p2');
-      if (myLetter) cellEl.classList.add(`filled-${state.playerId}`);
-      else if (otherLetter) cellEl.classList.add(`filled-${state.playerId === 'p1' ? 'p2' : 'p1'}`);
+    if (state.mode === 'collaborative') {
+      const data = cells[key];
+      state.grid[r][c].filled.shared = data.letter || '';
     } else {
-      // Collaborative: val = { letter: 'A', owner: 'p1' }
-      const letter = val?.letter || '';
-      state.grid[r][c].filled = { shared: letter };
-      letterEl.textContent = letter;
+      // Competitive
+      const data = cells[key];
+      if (data.p1 !== undefined) state.grid[r][c].filled.p1 = data.p1;
+      if (data.p2 !== undefined) state.grid[r][c].filled.p2 = data.p2;
     }
-  });
-
-  updateSolvedClues();
-}
-
-function updateCursors(cursors) {
-  document.querySelectorAll('.p1-cursor,.p2-cursor').forEach(el => {
-    el.classList.remove('p1-cursor','p2-cursor');
-  });
-  Object.entries(cursors).forEach(([pid, pos]) => {
-    if (pid !== state.playerId) {
-      const el = document.getElementById(`cell-${pos.row}-${pos.col}`);
-      el?.classList.add(`${pid}-cursor`);
-    }
-  });
-}
-
-function updateSolvedClues() {
-  const solved = {};
-  const isSolo = state.mode === 'solo';
-
-  const checkWord = (clue) => {
-    const key = `${clue.dir}_${clue.number}`;
-    let word = '';
-    for (let i = 0; i < clue.answer.length; i++) {
-      const r = clue.dir === 'across' ? clue.row : clue.row + i;
-      const c = clue.dir === 'across' ? clue.col + i : clue.col;
-      const cell = state.grid[r]?.[c];
-      if (!cell) return;
-      const letter = state.mode === 'competitive'
-        ? (cell.filled?.[state.playerId] || '')
-        : (cell.filled?.shared || '');
-      word += letter;
-    }
-    solved[key] = word.toUpperCase() === clue.answer.toUpperCase();
-    const el = document.getElementById(`clue-${clue.dir}-${clue.number}`);
-    if (el) el.classList.toggle('solved', solved[key]);
-  };
-
-  state.clues.across?.forEach(checkWord);
-  state.clues.down?.forEach(checkWord);
-
-  const solvedCount = Object.values(solved).filter(Boolean).length;
-
-  if (isSolo) {
-    document.getElementById('scoreSoloVal').textContent = solvedCount;
-  } else if (state.mode === 'competitive') {
-    state.roomRef?.child(`scores/${state.playerId}`).set(solvedCount);
+    updateCellDisplay(r, c);
   }
 }
 
-function updateScoreDisplay() {
-  document.getElementById('scoreP1Val').textContent = state.scores.p1 || 0;
-  document.getElementById('scoreP2Val').textContent = state.scores.p2 || 0;
-}
+/* ═══════════ COMPLETION CHECK ═══════════ */
 
 function checkCompletion() {
   if (state.gameComplete) return;
 
-  let totalCells = 0;
-  let correctCells = 0;
+  let completedWords = 0;
+  let totalWords = 0;
 
-  for (const row of state.grid) {
-    for (const cell of row) {
-      if (cell.black) continue;
-      totalCells++;
-      const letter = state.mode === 'competitive'
-        ? (cell.filled?.[state.playerId] || cell.filled?.[state.playerId === 'p1' ? 'p2' : 'p1'] || '')
-        : (cell.filled?.shared || '');
-      if (letter.toUpperCase() === cell.answer.toUpperCase()) correctCells++;
+  for (const dir of ['across', 'down']) {
+    for (const clue of state.clues[dir]) {
+      totalWords++;
+      let word = '';
+      for (let i = 0; i < clue.answer.length; i++) {
+        const r = clue.dir === 'across' ? clue.row : clue.row + i;
+        const c = clue.dir === 'across' ? clue.col + i : clue.col;
+
+        if (state.mode === 'competitive') {
+          word += (state.grid[r][c].filled[state.playerId] || '');
+        } else {
+          word += (state.grid[r][c].filled.shared || '');
+        }
+      }
+
+      if (word.toUpperCase() === clue.answer.toUpperCase()) {
+        completedWords++;
+        // Mark clue as completed in UI
+        const clueEl = document.getElementById(`clue_${clue.dir}_${clue.number}`);
+        if (clueEl) clueEl.classList.add('completed');
+      } else {
+        const clueEl = document.getElementById(`clue_${clue.dir}_${clue.number}`);
+        if (clueEl) clueEl.classList.remove('completed');
+      }
     }
   }
 
-  if (correctCells === totalCells && totalCells > 0) {
+  // Update score display
+  document.getElementById('hudScore').textContent = completedWords;
+
+  if (completedWords === totalWords) {
     state.gameComplete = true;
+    clearInterval(state.timerInterval);
     showWinScreen();
   }
 }
 
-function checkAll() {
-  for (const row of state.grid) {
-    for (const cell of row) {
-      if (cell.black) continue;
-      const el = document.getElementById(`cell-${cell.row}-${cell.col}`);
-      const letter = state.mode === 'competitive'
-        ? (cell.filled?.[state.playerId] || '')
-        : (cell.filled?.shared || '');
-      if (letter) {
-        el?.classList.remove('correct','incorrect');
-        if (letter.toUpperCase() === cell.answer.toUpperCase()) el?.classList.add('correct');
-        else el?.classList.add('incorrect');
-      }
-    }
-  }
-}
+/* ═══════════ WIN SCREEN ═══════════ */
 
-// ===== TIMER =====
-function startTimer(startTs) {
-  if (state.timerInterval) clearInterval(state.timerInterval);
-  state.timerStart = startTs || Date.now();
-  state.timerInterval = setInterval(() => {
-    const elapsed = Math.floor((Date.now() - state.timerStart) / 1000);
-    const m = Math.floor(elapsed / 60);
-    const s = elapsed % 60;
-    document.getElementById('timerDisplay').textContent = `${m}:${s.toString().padStart(2,'0')}`;
-  }, 1000);
-}
-
-// ===== WIN SCREEN =====
 function showWinScreen() {
-  if (state.timerInterval) clearInterval(state.timerInterval);
   const elapsed = Math.floor((Date.now() - state.timerStart) / 1000);
-  const m = Math.floor(elapsed / 60);
-  const s = elapsed % 60;
+  const mins = Math.floor(elapsed / 60);
+  const secs = elapsed % 60;
+  const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
 
-  document.getElementById('finalTime').textContent = `Solved in ${m}:${s.toString().padStart(2,'0')}`;
-
-  const overlay = document.getElementById('winOverlay');
-  const scoreDisplay = document.getElementById('scoreDisplay');
+  const totalWords = state.clues.across.length + state.clues.down.length;
 
   if (state.mode === 'solo') {
-    document.getElementById('winTitle').textContent = '🎉 Solved!';
-    document.getElementById('winnerMsg').textContent = `Nice work, ${state.playerName}!`;
-    scoreDisplay.innerHTML = '';
-  } else if (state.mode === 'competitive') {
+    document.getElementById('winTitle').textContent = `Nice work, ${state.playerName}!`;
+    document.getElementById('winSubtitle').textContent = state.puzzle.title || 'Puzzle Complete';
+    document.getElementById('winStats').innerHTML = `
+      <div class="win-stat"><div class="win-stat-val">${timeStr}</div><div class="win-stat-label">Time</div></div>
+      <div class="win-stat"><div class="win-stat-val">${totalWords}</div><div class="win-stat-label">Words</div></div>
+    `;
+    document.getElementById('winScores').style.display = 'none';
+  } else if (state.mode === 'collaborative') {
+    document.getElementById('winTitle').textContent = 'You solved it together! 🤝🏾';
+    document.getElementById('winSubtitle').textContent = `${timeStr}`;
+    document.getElementById('winStats').innerHTML = `
+      <div class="win-stat"><div class="win-stat-val">${timeStr}</div><div class="win-stat-label">Time</div></div>
+      <div class="win-stat"><div class="win-stat-val">${totalWords}</div><div class="win-stat-label">Words</div></div>
+    `;
+  } else {
+    // Competitive
     const p1Score = state.scores.p1 || 0;
     const p2Score = state.scores.p2 || 0;
-    const p1Name = document.getElementById('scoreP1Name').textContent;
-    const p2Name = document.getElementById('scoreP2Name').textContent;
-    const winner = p1Score > p2Score ? p1Name : p2Score > p1Score ? p2Name : 'Tie!';
-    document.getElementById('winTitle').textContent = '🏆 Puzzle Solved!';
-    document.getElementById('winnerMsg').textContent = p1Score === p2Score ? "It's a tie!" : `${winner} wins!`;
-    scoreDisplay.innerHTML = `
-      <div class="score-box ${p1Score >= p2Score ? 'winner' : ''}">
-        <div class="sb-name">${p1Name}</div>
-        <div class="sb-score">${p1Score}</div>
+    const winner = p1Score > p2Score ? 'Player 1' : p2Score > p1Score ? 'Player 2' : 'Tie';
+    document.getElementById('winTitle').textContent = winner === 'Tie' ? "It's a tie!" : `${winner} wins!`;
+    document.getElementById('winSubtitle').textContent = timeStr;
+    document.getElementById('winScores').style.display = 'flex';
+    document.getElementById('winScores').innerHTML = `
+      <div class="win-player ${p1Score >= p2Score ? 'winner' : ''}">
+        <div class="win-player-name">P1</div>
+        <div class="win-player-score">${p1Score}</div>
       </div>
-      <div class="score-box ${p2Score >= p1Score ? 'winner' : ''}">
-        <div class="sb-name">${p2Name}</div>
-        <div class="sb-score">${p2Score}</div>
-      </div>`;
-  } else {
-    document.getElementById('winTitle').textContent = '🎉 Together!';
-    document.getElementById('winnerMsg').textContent = 'You solved it as a team';
-    scoreDisplay.innerHTML = '';
+      <div class="win-player ${p2Score >= p1Score ? 'winner' : ''}">
+        <div class="win-player-name">P2</div>
+        <div class="win-player-score">${p2Score}</div>
+      </div>
+    `;
   }
 
-  overlay.style.display = 'flex';
+  showScreen('screenWin');
 }
 
-function playAgain() {
-  document.getElementById('winOverlay').style.display = 'none';
+/* ═══════════ TIMER / HUD ═══════════ */
+
+function updateTimer() {
+  if (!state.timerStart) return;
+  const elapsed = Math.floor((Date.now() - state.timerStart) / 1000);
+  const mins = Math.floor(elapsed / 60);
+  const secs = elapsed % 60;
+  document.getElementById('hudTimer').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+function updateHUD() {
+  if (state.mode === 'competitive') {
+    document.getElementById('hudScoreBadge').innerHTML = `⚔️ <span class="val">${state.scores[state.playerId] || 0}</span>`;
+  }
+}
+
+/* ═══════════ NAVIGATION ═══════════ */
+
+function leaveRoom() {
+  clearInterval(state.timerInterval);
+
+  // Clean up Firebase listeners
+  if (state.roomRef) {
+    state.roomRef.off();
+    state.roomRef = null;
+  }
+
+  // Close clue drawer
+  document.getElementById('clueDrawer').classList.remove('open');
+
+  state.selectedCell = null;
+  state.gameComplete = false;
+  state.puzzle = null;
+
+  showScreen('screenLobby');
+}
+
+function backToLobby() {
   leaveRoom();
 }
 
-// ===== SCREEN / NAV =====
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+/* ═══════════ INIT ═══════════ */
 
-  if (id === 'waiting') {
-    document.getElementById('waitingRoomCode').textContent = state.roomCode;
-    document.getElementById('slot1Name').textContent = state.playerName;
-    document.getElementById('shareUrl').textContent = window.location.href;
-    document.getElementById('waitingFor').textContent = state.playerId === 'p1' ? 'Player 2' : 'Host';
+// Check for room code in URL
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const room = params.get('room');
+  if (room) {
+    document.getElementById('inputRoom').value = room.toUpperCase();
+    // Auto-switch to multiplayer mode
+    setMode('collaborative');
+    document.querySelectorAll('.mode-btn')[1].classList.add('selected');
+    document.querySelectorAll('.mode-btn')[0].classList.remove('selected');
   }
-}
+})();
 
-function leaveRoom() {
-  if (state.roomRef && state.playerId) {
-    state.roomRef.child(`${state.playerId}/connected`).set(false);
-    state.roomRef.child(`cursors/${state.playerId}`).remove();
+// Prevent iOS zoom on double-tap
+document.addEventListener('touchstart', (e) => {
+  if (e.target.closest('.grid-cell')) {
+    e.preventDefault();
   }
-  if (state.timerInterval) clearInterval(state.timerInterval);
-  state.roomRef?.off();
-  state.roomRef = null;
-  state.puzzle = null;
-  state.grid = [];
-  state.selectedCell = null;
-  state.gameComplete = false;
-  state.mode = 'collaborative';
+}, { passive: false });
 
-  // Reset score UI back to multiplayer layout
-  document.getElementById('scoreP1').style.display = 'block';
-  document.getElementById('scoreP2').style.display = 'block';
-  document.getElementById('scoreSolo').style.display = 'none';
-
-  document.getElementById('winOverlay').style.display = 'none';
-  showScreen('lobby');
-}
-
-// ===== INIT =====
-// Pre-fill room code from URL param if present
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('room')) {
-  document.getElementById('roomCode').value = urlParams.get('room').toUpperCase();
-}
+// Keep hidden input focused during game
+document.addEventListener('click', (e) => {
+  if (document.getElementById('screenGame').classList.contains('active')) {
+    if (!e.target.closest('.clue-drawer') && !e.target.closest('.game-header') && !e.target.closest('.keyboard-bar')) {
+      setTimeout(() => focusHiddenInput(), 10);
+    }
+  }
+});
 </script>
 </body>
 </html>
