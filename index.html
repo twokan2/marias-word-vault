@@ -7,9 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════════ */
-/*  MARIA'S WORD VAULT — Design System        */
-/* ═══════════════════════════════════════════ */
 :root {
   --ink: #1a1208;
   --ink-soft: #3d3224;
@@ -26,11 +23,8 @@
   --blue-select: #a8c8e8;
   --blue-active: #6ba3d6;
   --cell-size: 40px;
-  --grid-gap: 0px;
 }
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 html, body {
   height: 100%; width: 100%;
   overflow: hidden;
@@ -40,7 +34,6 @@ html, body {
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
 }
-
 body::before {
   content: '';
   position: fixed; inset: 0;
@@ -48,12 +41,10 @@ body::before {
   pointer-events: none;
   z-index: 9999;
 }
-
-/* ═══════════ TYPOGRAPHY ═══════════ */
 .font-display { font-family: 'Playfair Display', Georgia, serif; }
 .font-mono { font-family: 'DM Mono', monospace; }
 
-/* ═══════════ SCREENS ═══════════ */
+/* ═══ SCREENS ═══ */
 .screen {
   display: none;
   position: fixed; inset: 0;
@@ -64,742 +55,364 @@ body::before {
 }
 .screen.active { display: flex; }
 
-/* ═══════════ LOBBY ═══════════ */
-#screenLobby {
-  justify-content: center;
-  padding: 24px;
-  gap: 0;
+/* ═══ LOBBY ═══ */
+#screenLobby { justify-content: center; padding: 24px; gap: 0; }
+.lobby-masthead { text-align: center; margin-bottom: 32px; }
+.lobby-rule { width: 60px; height: 2px; background: var(--gold); margin: 0 auto 12px; }
+.lobby-title { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 6vw, 2.4rem); font-weight: 800; color: var(--ink); line-height: 1.1; }
+.lobby-subtitle { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--ink-faint); letter-spacing: 3px; text-transform: uppercase; margin-top: 6px; }
+.lobby-card { width: 100%; max-width: 380px; }
+.lobby-section { margin-bottom: 16px; }
+.lobby-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--ink-faint); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+.lobby-input {
+  font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600;
+  padding: 10px 14px; border: 2px solid var(--paper-dim); border-radius: 2px;
+  background: white; color: var(--ink); width: 100%; outline: none;
+  box-shadow: 2px 2px 0 var(--paper-dim); transition: border-color 0.2s;
 }
-
-.lobby-masthead {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.lobby-rule {
-  width: 60px; height: 2px;
-  background: var(--gold);
-  margin: 0 auto 12px;
-}
-
-.lobby-title {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(1.8rem, 6vw, 2.6rem);
-  font-weight: 800;
-  color: var(--ink);
-  letter-spacing: -0.5px;
-  line-height: 1.1;
-}
-
-.lobby-subtitle {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--ink-faint);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  margin-top: 8px;
-}
-
-.lobby-form {
-  width: 100%; max-width: 340px;
-  display: flex; flex-direction: column;
-  gap: 12px;
-}
-
-.form-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--ink-faint);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  margin-bottom: -6px;
-  margin-top: 8px;
-}
-
-.form-input {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 1rem; font-weight: 600;
-  padding: 12px 16px;
-  border: 2px solid var(--paper-dim);
-  border-radius: 2px;
-  background: white;
-  color: var(--ink);
-  outline: none;
-  transition: border-color 0.2s;
-  width: 100%;
-}
-.form-input:focus { border-color: var(--gold); }
-.form-input::placeholder { color: #bbb; font-weight: 400; }
-
-.mode-picker {
-  display: flex; gap: 6px;
-  width: 100%;
-}
-.mode-btn {
-  flex: 1;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  padding: 10px 6px;
-  border: 2px solid var(--paper-dim);
-  border-radius: 2px;
-  background: white;
-  color: var(--ink-faint);
-  cursor: pointer;
-  text-align: center;
+.lobby-input:focus { border-color: var(--gold); }
+.mode-row, .puzzle-row { display: flex; gap: 6px; }
+.mode-btn, .puzzle-btn {
+  flex: 1; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 600;
+  padding: 8px 4px; border: 2px solid var(--paper-dim); border-radius: 2px;
+  background: white; color: var(--ink-faint); cursor: pointer; text-align: center;
   transition: all 0.15s;
 }
-.mode-btn.selected {
-  border-color: var(--gold);
-  color: var(--ink);
-  background: var(--paper-warm);
-  box-shadow: 0 2px 0 var(--gold-dim);
+.mode-btn.selected, .puzzle-btn.selected {
+  border-color: var(--gold); color: var(--ink); background: var(--gold-light);
+  box-shadow: 2px 2px 0 var(--gold-dim);
 }
-
-.puzzle-picker {
-  display: flex; gap: 6px; width: 100%;
-}
-.puzzle-btn {
-  flex: 1;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.72rem; font-weight: 500;
-  padding: 10px 6px;
-  border: 2px solid var(--paper-dim);
-  border-radius: 2px;
-  background: white; color: var(--ink-faint);
-  cursor: pointer; text-align: center;
-  transition: all 0.15s;
-}
-.puzzle-btn.selected {
-  border-color: var(--sage);
-  color: var(--ink);
-  background: var(--sage-light);
-}
-
-.room-row {
-  display: flex; gap: 8px; width: 100%;
-}
-.room-row .form-input { flex: 1; text-transform: uppercase; letter-spacing: 3px; font-family: 'DM Mono', monospace; }
-
 .btn-primary {
-  font-family: 'Playfair Display', serif;
-  font-size: 1rem; font-weight: 700;
-  padding: 14px 24px;
-  border: none; border-radius: 2px;
-  cursor: pointer;
-  transition: all 0.12s;
-  width: 100%;
-  letter-spacing: 0.5px;
+  font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700;
+  width: 100%; padding: 12px; border: none; border-radius: 2px;
+  color: white; cursor: pointer; margin-top: 8px; transition: all 0.12s;
 }
-.btn-gold {
-  background: var(--gold);
-  color: white;
-  box-shadow: 0 2px 0 var(--gold-dim);
+.btn-gold { background: var(--gold); box-shadow: 0 3px 0 var(--gold-dim); }
+.btn-gold:active { transform: translateY(3px); box-shadow: none; }
+.btn-sage { background: var(--sage); box-shadow: 0 3px 0 #375e46; }
+.btn-sage:active { transform: translateY(3px); box-shadow: none; }
+.btn-outline-sm {
+  font-family: 'DM Mono', monospace; font-size: 0.7rem; font-weight: 500;
+  padding: 6px 12px; border: 2px solid var(--paper-dim); border-radius: 2px;
+  background: transparent; color: var(--ink-faint); cursor: pointer;
 }
-.btn-gold:active { transform: translateY(2px); box-shadow: none; }
+.btn-outline-sm:hover { border-color: var(--gold); color: var(--ink); }
+#roomArea { display: none; }
+#customPuzzleArea { display: none; }
+.lobby-select {
+  font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+  padding: 8px 12px; border: 2px solid var(--paper-dim); border-radius: 2px;
+  background: white; color: var(--ink); width: 100%; outline: none;
+}
+.lobby-links { text-align: center; margin-top: 16px; display: flex; gap: 12px; justify-content: center; }
+.lobby-links a, .lobby-links button {
+  font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--ink-faint);
+  text-decoration: none; background: none; border: none; cursor: pointer;
+}
+.lobby-links a:hover, .lobby-links button:hover { color: var(--gold); }
 
-.btn-rust {
-  background: var(--rust);
-  color: white;
-  box-shadow: 0 2px 0 #8a3318;
-}
-.btn-rust:active { transform: translateY(2px); box-shadow: none; }
+/* ═══ INSTRUCTIONS ═══ */
+#screenInstructions { padding: 24px; justify-content: flex-start; }
+.instr-container { max-width: 420px; width: 100%; }
+.instr-back { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--ink-faint); cursor: pointer; background: none; border: none; margin-bottom: 20px; }
+.instr-back:hover { color: var(--gold); }
+.instr-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
+.instr-rule { width: 40px; height: 2px; background: var(--gold); margin-bottom: 20px; }
+.instr-section { margin-bottom: 20px; }
+.instr-heading { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 8px; }
+.instr-text { font-size: 0.85rem; line-height: 1.6; color: var(--ink-soft); }
+.instr-text strong { color: var(--ink); font-weight: 600; }
 
-.btn-sage {
-  background: var(--sage);
-  color: white;
-  box-shadow: 0 2px 0 #375e46;
-}
-.btn-sage:active { transform: translateY(2px); box-shadow: none; }
-
-.btn-outline {
-  background: transparent;
-  color: var(--ink-faint);
-  border: 2px solid var(--paper-dim);
-  box-shadow: none;
-  font-size: 0.85rem;
-}
-
-.lobby-actions {
-  display: flex; flex-direction: column;
-  gap: 8px; width: 100%;
-  margin-top: 8px;
-}
-
-.lobby-divider {
-  display: flex; align-items: center; gap: 12px;
-  width: 100%; margin: 4px 0;
-}
-.lobby-divider::before, .lobby-divider::after {
-  content: ''; flex: 1; height: 1px; background: var(--paper-dim);
-}
-.lobby-divider span {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.65rem; color: #ccc;
-  letter-spacing: 2px; text-transform: uppercase;
-}
-
-.custom-puzzle-select {
-  width: 100%;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.9rem;
-  padding: 10px 14px;
-  border: 2px solid var(--paper-dim);
-  border-radius: 2px;
-  background: white;
-  color: var(--ink);
-  outline: none;
-}
-
-/* ═══════════ WAITING ROOM ═══════════ */
-#screenWaiting {
-  justify-content: center;
-  gap: 20px;
-  padding: 24px;
-}
-
-.waiting-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.4rem;
-  font-weight: 700;
-}
-
-.room-code-box {
-  font-family: 'DM Mono', monospace;
-  font-size: 2rem;
-  letter-spacing: 8px;
-  color: var(--gold);
-  background: white;
-  padding: 12px 28px;
-  border: 2px solid var(--paper-dim);
-  border-radius: 2px;
-}
-
-.share-url {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.65rem;
-  color: var(--ink-faint);
-  word-break: break-all;
-  text-align: center;
-  max-width: 300px;
-  cursor: pointer;
-}
-.share-url:hover { color: var(--gold); }
-
-.player-slots {
-  display: flex; flex-direction: column;
-  gap: 8px; width: 100%; max-width: 280px;
-}
-
+/* ═══ WAITING ═══ */
+#screenWaiting { justify-content: center; padding: 24px; }
+.waiting-card { text-align: center; max-width: 380px; }
+.waiting-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+.waiting-code { font-family: 'DM Mono', monospace; font-size: 2rem; font-weight: 500; color: var(--gold); letter-spacing: 6px; margin: 12px 0; }
+.waiting-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--ink-faint); letter-spacing: 2px; text-transform: uppercase; }
+.share-url { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--sage); word-break: break-all; cursor: pointer; margin: 8px 0 16px; }
+.player-slots { display: flex; gap: 12px; justify-content: center; margin: 20px 0; }
 .player-slot {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 14px;
-  border: 2px solid var(--paper-dim);
-  border-radius: 2px;
-  background: white;
-  font-weight: 600;
-  font-size: 0.9rem;
+  padding: 10px 16px; border: 2px solid var(--paper-dim); border-radius: 2px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--ink-faint);
+  min-width: 120px; text-align: center;
 }
-.player-slot.connected { border-color: var(--sage); }
-.player-slot .dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: var(--paper-dim);
-}
-.player-slot.connected .dot { background: var(--sage); }
+.player-slot.connected { border-color: var(--sage); color: var(--sage); background: var(--sage-light); }
 
-.waiting-spinner {
-  width: 24px; height: 24px;
-  border: 3px solid var(--paper-dim);
-  border-top-color: var(--gold);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ═══════════ GAME SCREEN ═══════════ */
-#screenGame {
-  padding: 0;
-  overflow: hidden;
-}
-
+/* ═══ GAME ═══ */
+#screenGame { flex-direction: column; align-items: stretch; overflow: hidden; }
 .game-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: var(--ink);
-  color: var(--paper);
-  width: 100%;
-  min-height: 44px;
-  flex-shrink: 0;
-  z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 12px; border-bottom: 1px solid var(--paper-dim);
+  min-height: 36px; flex-shrink: 0;
 }
-
-.game-header-left {
-  display: flex; align-items: center; gap: 8px;
-}
-.game-back-btn {
-  background: none; border: none;
-  color: var(--paper); font-size: 1.1rem;
-  cursor: pointer; padding: 4px;
-  opacity: 0.7;
-}
-.game-back-btn:hover { opacity: 1; }
-
-.game-title-sm {
-  font-family: 'Playfair Display', serif;
-  font-size: 0.85rem;
-  font-weight: 700;
-  opacity: 0.9;
-}
-
-.game-header-right {
-  display: flex; align-items: center; gap: 12px;
-}
-
-.hud-badge {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.7rem;
-  background: rgba(255,255,255,0.1);
-  padding: 3px 10px;
-  border-radius: 2px;
-  display: flex; align-items: center; gap: 4px;
-}
-.hud-badge .val { color: var(--gold-light); font-weight: 600; }
-
-/* Clue bar below header */
+.hud-title { font-family: 'Playfair Display', serif; font-size: 0.85rem; font-weight: 700; }
+.hud-right { display: flex; gap: 12px; align-items: center; }
+.hud-timer { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--ink-faint); }
+.hud-score { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--gold-dim); }
+.hud-back { font-size: 1rem; background: none; border: none; cursor: pointer; color: var(--ink-faint); padding: 4px; }
 .clue-bar {
-  width: 100%;
-  padding: 10px 14px;
-  background: white;
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px; background: var(--paper-warm);
   border-bottom: 1px solid var(--paper-dim);
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  min-height: 48px;
-  flex-shrink: 0;
-  z-index: 5;
-  cursor: pointer;
+  min-height: 36px; flex-shrink: 0;
 }
-
-.clue-number {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--gold-dim);
-  flex-shrink: 0;
-  padding-top: 2px;
-  min-width: 50px;
-}
-
-.clue-text {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.92rem;
-  font-weight: 500;
-  color: var(--ink);
-  line-height: 1.35;
-  flex: 1;
-}
-
-/* Grid wrapper — takes remaining space */
+.clue-bar-num { font-family: 'DM Mono', monospace; font-size: 0.7rem; font-weight: 500; color: var(--gold-dim); white-space: nowrap; }
+.clue-bar-text { font-size: 0.8rem; color: var(--ink-soft); flex: 1; }
 .grid-wrapper {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  padding: 8px;
-  position: relative;
-  width: 100%;
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 8px; overflow: hidden; min-height: 0;
 }
-
 .crossword-grid {
-  display: grid;
-  gap: var(--grid-gap);
-  position: relative;
+  display: inline-grid; gap: 0;
   border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
 }
-
 .grid-cell {
-  width: var(--cell-size);
-  height: var(--cell-size);
-  position: relative;
-  background: white;
-  border: 0.5px solid #ccc;
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
+  width: var(--cell-size); height: var(--cell-size);
+  border: 0.5px solid #bbb;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; cursor: pointer;
+  background: white; user-select: none;
+  transition: background 0.1s;
 }
-
-.grid-cell.black {
-  background: var(--ink);
-  cursor: default;
-  border-color: var(--ink);
+.grid-cell.black { background: var(--ink); cursor: default; }
+.grid-cell.selected { background: var(--blue-active) !important; }
+.grid-cell.word-highlight { background: var(--blue-select); }
+.grid-cell.peer-cursor { box-shadow: inset 0 0 0 2px var(--rust); }
+.cell-number {
+  position: absolute; top: 1px; left: 2px;
+  font-family: 'DM Sans', sans-serif; font-size: calc(var(--cell-size) * 0.22);
+  font-weight: 700; color: var(--ink-faint); line-height: 1;
 }
-
-.grid-cell .cell-number {
-  position: absolute;
-  top: 1px; left: 2px;
+.cell-letter {
   font-family: 'DM Sans', sans-serif;
-  font-size: calc(var(--cell-size) * 0.24);
-  font-weight: 700;
-  color: var(--ink);
-  line-height: 1;
-  pointer-events: none;
+  font-size: calc(var(--cell-size) * 0.48);
+  font-weight: 700; color: var(--ink); text-transform: uppercase;
 }
 
-.grid-cell .cell-letter {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'DM Sans', sans-serif;
-  font-size: calc(var(--cell-size) * 0.52);
-  font-weight: 700;
-  color: var(--ink);
-  pointer-events: none;
-  text-transform: uppercase;
+/* On-screen keyboard */
+.osk {
+  flex-shrink: 0; padding: 4px 4px 8px;
+  background: var(--paper-dim); border-top: 1px solid #ccc;
+}
+.osk-row { display: flex; justify-content: center; gap: 3px; margin-bottom: 3px; }
+.osk-key {
+  font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 700;
+  min-width: 26px; height: 38px; border: none; border-radius: 4px;
+  background: white; color: var(--ink); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  transition: background 0.08s;
+  flex: 1; max-width: 38px;
+}
+.osk-key:active { background: var(--blue-select); transform: translateY(1px); box-shadow: none; }
+.osk-key.wide { min-width: 44px; max-width: 56px; font-size: 0.7rem; letter-spacing: 0.5px; }
+.osk-key.accent { background: var(--gold-light); color: var(--gold-dim); }
+
+/* Direction + clue toggle bar */
+.dir-bar {
+  display: flex; gap: 0; flex-shrink: 0;
+  border-top: 1px solid var(--paper-dim);
+  border-bottom: 1px solid var(--paper-dim);
+}
+.dir-btn {
+  flex: 1; font-family: 'DM Mono', monospace; font-size: 0.65rem;
+  font-weight: 500; letter-spacing: 1px; text-transform: uppercase;
+  padding: 6px; border: none; background: var(--paper-warm);
+  color: var(--ink-faint); cursor: pointer; text-align: center;
+}
+.dir-btn.active { background: var(--gold-light); color: var(--gold-dim); font-weight: 700; }
+.dir-btn-clue {
+  padding: 6px 10px; border: none; background: var(--paper-warm);
+  color: var(--ink-faint); cursor: pointer; font-size: 0.85rem;
+  border-left: 1px solid var(--paper-dim);
 }
 
-/* Selection states — NYT style */
-.grid-cell.word-highlight {
-  background: var(--blue-select);
-}
-
-.grid-cell.selected {
-  background: var(--blue-active);
-}
-
-/* Peer cursor */
-.grid-cell.peer-cursor {
-  box-shadow: inset 0 0 0 2px var(--ink);
-}
-
-/* Correct / incorrect feedback */
-.grid-cell.correct-flash {
-  animation: correctPulse 0.4s ease;
-}
-@keyframes correctPulse {
-  0% { background: var(--sage-light); }
-  100% { background: white; }
-}
-
-.grid-cell.incorrect-flash .cell-letter {
-  color: var(--rust);
-}
-
-/* Clue panel (bottom drawer) */
+/* Clue drawer */
 .clue-drawer {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  background: white;
-  border-top: 2px solid var(--paper-dim);
-  transform: translateY(100%);
-  transition: transform 0.3s ease;
-  z-index: 20;
-  max-height: 55vh;
-  overflow-y: auto;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--paper); border-top: 2px solid var(--ink);
+  transform: translateY(100%); transition: transform 0.3s;
+  max-height: 55vh; overflow-y: auto; padding: 16px;
+  z-index: 100;
 }
 .clue-drawer.open { transform: translateY(0); }
+.clue-drawer-handle { width: 40px; height: 3px; background: var(--paper-dim); border-radius: 3px; margin: 0 auto 12px; cursor: pointer; }
+.clue-section { margin-bottom: 16px; }
+.clue-section-title { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid var(--paper-dim); }
+.clue-item { display: flex; gap: 6px; padding: 4px 0; cursor: pointer; align-items: baseline; }
+.clue-item:hover { background: var(--paper-warm); }
+.clue-item-num { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--gold-dim); min-width: 20px; }
+.clue-item-text { font-size: 0.8rem; color: var(--ink-soft); }
+.clue-item.completed .clue-item-text { text-decoration: line-through; color: var(--ink-faint); }
 
-.clue-drawer-handle {
-  width: 100%;
-  padding: 10px;
-  text-align: center;
-  cursor: pointer;
-  position: sticky;
-  top: 0;
-  background: white;
-  z-index: 1;
-  border-bottom: 1px solid var(--paper-dim);
-}
-.clue-drawer-handle::after {
-  content: '';
-  display: inline-block;
-  width: 36px; height: 4px;
-  background: var(--paper-dim);
-  border-radius: 2px;
-}
+/* ═══ WIN ═══ */
+#screenWin { justify-content: center; padding: 24px; text-align: center; }
+.win-ornament { font-size: 3rem; margin-bottom: 12px; }
+.win-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; }
+.win-subtitle { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--ink-faint); margin-bottom: 20px; }
+.win-stats { display: flex; gap: 24px; justify-content: center; margin-bottom: 24px; }
+.win-stat-val { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 800; color: var(--gold); }
+.win-stat-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--ink-faint); letter-spacing: 2px; text-transform: uppercase; }
+.win-scores { display: flex; gap: 16px; justify-content: center; margin-bottom: 20px; }
 
-.clue-section {
-  padding: 8px 14px 14px;
+.loading-spinner {
+  display: inline-block; width: 18px; height: 18px;
+  border: 2px solid var(--paper-dim); border-top-color: var(--gold);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+  margin-right: 8px; vertical-align: middle;
 }
-
-.clue-section-title {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.65rem;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  padding: 6px 0;
-  border-bottom: 1px solid var(--paper-dim);
-  margin-bottom: 4px;
-}
-
-.clue-item {
-  display: flex; gap: 8px;
-  padding: 7px 0;
-  cursor: pointer;
-  border-bottom: 1px solid rgba(0,0,0,0.04);
-}
-.clue-item:hover { background: var(--paper-warm); margin: 0 -14px; padding: 7px 14px; }
-.clue-item.completed .clue-item-text { color: var(--ink-faint); text-decoration: line-through; }
-
-.clue-item-num {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--gold-dim);
-  min-width: 28px;
-  flex-shrink: 0;
-}
-
-.clue-item-text {
-  font-size: 0.85rem;
-  color: var(--ink);
-  line-height: 1.35;
-}
-
-/* Keyboard bar (for toggling direction) */
-.keyboard-bar {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 12px;
-  background: var(--paper-warm);
-  border-top: 1px solid var(--paper-dim);
-  flex-shrink: 0;
-  gap: 8px;
-  z-index: 5;
-}
-
-.kb-btn {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.7rem;
-  padding: 6px 14px;
-  border: 1px solid var(--paper-dim);
-  border-radius: 2px;
-  background: white;
-  color: var(--ink-faint);
-  cursor: pointer;
-}
-.kb-btn.active { border-color: var(--gold); color: var(--ink); background: var(--paper); }
-
-.kb-btn-icon {
-  font-size: 1rem;
-  padding: 6px 10px;
-  border: 1px solid var(--paper-dim);
-  border-radius: 2px;
-  background: white;
-  color: var(--ink-faint);
-  cursor: pointer;
-}
-
-/* ═══════════ WIN SCREEN ═══════════ */
-#screenWin {
-  justify-content: center;
-  gap: 16px;
-  padding: 32px;
-}
-
-.win-ornament {
-  font-size: 2.4rem;
-}
-
-.win-title {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(1.6rem, 5vw, 2.2rem);
-  font-weight: 800;
-  text-align: center;
-}
-
-.win-subtitle {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.75rem;
-  color: var(--ink-faint);
-  letter-spacing: 1px;
-}
-
-.win-stats {
-  display: flex; gap: 24px;
-  margin: 8px 0;
-}
-
-.win-stat {
-  text-align: center;
-}
-.win-stat-val {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--gold);
-}
-.win-stat-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.6rem;
-  color: var(--ink-faint);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-.win-scores {
-  display: flex; gap: 32px;
-  margin: 8px 0;
-}
-.win-player {
-  text-align: center;
-}
-.win-player-name {
-  font-weight: 600;
-  font-size: 0.9rem;
-  margin-bottom: 4px;
-}
-.win-player-score {
-  font-family: 'Playfair Display', serif;
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--gold);
-}
-.win-player.winner .win-player-score { color: var(--sage); }
-
-/* ═══════════ HIDDEN INPUT FOR MOBILE ═══════════ */
-#hiddenInput {
-  position: fixed;
-  top: -100px; left: -100px;
-  width: 1px; height: 1px;
-  opacity: 0;
-  font-size: 16px; /* prevents iOS zoom */
-  z-index: -1;
-}
-
-/* ═══════════ ANIMATIONS ═══════════ */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.fade-in { animation: fadeIn 0.3s ease forwards; }
-
-/* ═══════════ RESPONSIVE ═══════════ */
-@media (max-width: 400px) {
-  .game-header { padding: 6px 8px; }
-  .clue-bar { padding: 8px 10px; }
-  .hud-badge { font-size: 0.6rem; padding: 2px 8px; }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
+.puzzle-status { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--ink-faint); margin-top: 8px; text-align: center; min-height: 1.2em; }
 </style>
 </head>
 <body>
 
-<!-- Hidden input for mobile keyboard capture -->
-<input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-
-<!-- ═══════════ SCREEN: LOBBY ═══════════ -->
+<!-- SCREEN: LOBBY -->
 <div id="screenLobby" class="screen active">
   <div class="lobby-masthead">
     <div class="lobby-rule"></div>
     <div class="lobby-title font-display">Maria's Word Vault</div>
-    <div class="lobby-subtitle">A Family Crossword</div>
+    <div class="lobby-subtitle font-mono">A Crossword for Two</div>
   </div>
-
-  <div class="lobby-form">
-    <div class="form-label">Your Name</div>
-    <input type="text" id="inputName" class="form-input" placeholder="Enter your name" maxlength="20">
-
-    <div class="form-label">Puzzle</div>
-    <div class="puzzle-picker">
-      <button class="puzzle-btn selected" onclick="setPuzzleType('random')">📰 Daily</button>
-      <button class="puzzle-btn" onclick="setPuzzleType('custom')">👨‍👩‍👧 Family</button>
+  <div class="lobby-card">
+    <div class="lobby-section">
+      <div class="lobby-label">Your Name</div>
+      <input type="text" id="inputName" class="lobby-input" placeholder="Enter your name" maxlength="20" autocomplete="off">
     </div>
-
-    <div id="customPuzzleArea" style="display:none">
-      <select id="customPuzzleSelect" class="custom-puzzle-select">
-        <option value="">Loading puzzles...</option>
-      </select>
-    </div>
-
-    <div class="form-label">Mode</div>
-    <div class="mode-picker">
-      <button class="mode-btn selected" onclick="setMode('solo')">🧩 Solo</button>
-      <button class="mode-btn" onclick="setMode('collaborative')">🤝🏾 Co-op</button>
-      <button class="mode-btn" onclick="setMode('competitive')">⚔️ Vs</button>
-    </div>
-
-    <div id="roomArea" style="display:none">
-      <div class="form-label">Room Code</div>
-      <div class="room-row">
-        <input type="text" id="inputRoom" class="form-input" placeholder="ABCDE" maxlength="5">
-        <button class="btn-primary btn-gold" style="width:auto;padding:12px 18px" onclick="joinRoom()">Join</button>
+    <div class="lobby-section">
+      <div class="lobby-label">Puzzle Source</div>
+      <div class="puzzle-row">
+        <button class="puzzle-btn selected" onclick="setPuzzleType('random', this)">📰 Daily</button>
+        <button class="puzzle-btn" onclick="setPuzzleType('custom', this)">👨‍👩‍👧 Family</button>
+      </div>
+      <div id="customPuzzleArea" style="margin-top:8px">
+        <select id="customPuzzleSelect" class="lobby-select"></select>
       </div>
     </div>
-
-    <div class="lobby-actions">
-      <button id="btnPlay" class="btn-primary btn-gold" onclick="startGame()">Begin Puzzle</button>
+    <div class="lobby-section">
+      <div class="lobby-label">Mode</div>
+      <div class="mode-row">
+        <button class="mode-btn selected" onclick="setMode('solo', this)">🧩 Solo</button>
+        <button class="mode-btn" onclick="setMode('collaborative', this)">🤝🏾 Co-op</button>
+        <button class="mode-btn" onclick="setMode('competitive', this)">⚔️ Vs</button>
+      </div>
     </div>
-
-    <div class="lobby-divider"><span>or</span></div>
-    <a href="builder.html" class="btn-primary btn-outline" style="text-align:center;text-decoration:none;display:block">✏️ Build a Family Puzzle</a>
+    <div class="lobby-section" id="roomArea">
+      <div class="lobby-label">Room Code</div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="inputRoom" class="lobby-input" placeholder="ABCDE" maxlength="5" style="text-transform:uppercase;font-family:'DM Mono',monospace;letter-spacing:3px;text-align:center">
+        <button class="btn-outline-sm" onclick="joinRoom()">Join</button>
+      </div>
+    </div>
+    <button class="btn-primary btn-gold" id="btnPlay" onclick="startGame()">Begin Puzzle</button>
+    <div id="puzzleStatus" class="puzzle-status"></div>
+    <div class="lobby-links">
+      <button onclick="showScreen('screenInstructions')">How to Play</button>
+      <a href="builder.html">Puzzle Builder</a>
+    </div>
   </div>
 </div>
 
-<!-- ═══════════ SCREEN: WAITING ROOM ═══════════ -->
+<!-- SCREEN: INSTRUCTIONS -->
+<div id="screenInstructions" class="screen">
+  <div class="instr-container">
+    <button class="instr-back" onclick="showScreen('screenLobby')">← Back</button>
+    <div class="instr-title font-display">How to Play</div>
+    <div class="instr-rule"></div>
+    <div class="instr-section">
+      <div class="instr-heading">The Basics</div>
+      <div class="instr-text">Fill in every white square with a letter to complete all the words. Each puzzle is a <strong>5×5 mini crossword</strong> with 3 words going across and 3 words going down. Letters are shared where words cross — get one right and it helps solve the other.</div>
+    </div>
+    <div class="instr-section">
+      <div class="instr-heading">Controls</div>
+      <div class="instr-text">
+        <strong>Tap a white cell</strong> to select it. The active word highlights in blue and the clue appears at the top.<br><br>
+        <strong>Tap the same cell again</strong> to switch between Across and Down. You can also use the direction buttons or the ⇄ DIR key.<br><br>
+        <strong>Type a letter</strong> using the on-screen keyboard (or physical keyboard on desktop). The cursor advances automatically.<br><br>
+        <strong>⌫</strong> removes the letter in the current cell, or moves backward if empty.<br><br>
+        <strong>☰</strong> opens the full clue list. Tap any clue to jump to that word on the grid.
+      </div>
+    </div>
+    <div class="instr-section">
+      <div class="instr-heading">Game Modes</div>
+      <div class="instr-text">
+        🧩 <strong>Solo</strong> — Just you and the puzzle. Race the clock.<br><br>
+        🤝🏾 <strong>Co-op</strong> — Share the board in real time with a partner. One creates a room, the other joins with the code.<br><br>
+        ⚔️ <strong>Vs</strong> — Compete head-to-head on the same puzzle. Each player fills in their own letters.
+      </div>
+    </div>
+    <div class="instr-section">
+      <div class="instr-heading">Puzzles</div>
+      <div class="instr-text">
+        <strong>📰 Daily</strong> puzzles are generated fresh using a word API. If the connection is slow, a built-in puzzle loads instead.<br><br>
+        <strong>👨‍👩‍👧 Family</strong> puzzles are custom-made using the Puzzle Builder. Create your own with personal words and clues.
+      </div>
+    </div>
+    <div class="instr-section">
+      <div class="instr-heading">Tips</div>
+      <div class="instr-text">Start with the clues you know. Crossing letters will help unlock harder ones. The puzzle is complete when every white cell is correctly filled.</div>
+    </div>
+    <button class="btn-primary btn-sage" onclick="showScreen('screenLobby')" style="max-width:240px;margin:12px auto 0;display:block">Got It</button>
+  </div>
+</div>
+
+<!-- SCREEN: WAITING -->
 <div id="screenWaiting" class="screen">
-  <div class="waiting-title font-display">Waiting for Player 2</div>
-  <div class="room-code-box" id="waitingRoomCode">-----</div>
-  <div class="share-url" id="shareUrl" onclick="copyShareUrl()">tap to copy link</div>
-  <div class="player-slots">
-    <div class="player-slot connected" id="slotP1"><span class="dot"></span><span id="slotP1Name">Player 1</span></div>
-    <div class="player-slot" id="slotP2"><span class="dot"></span><span id="slotP2Name">Waiting...</span></div>
+  <div class="waiting-card">
+    <div class="waiting-title font-display">Waiting for Player 2</div>
+    <div class="waiting-label">Room Code</div>
+    <div class="waiting-code" id="waitingRoomCode">-----</div>
+    <div class="share-url" id="shareUrl" onclick="copyShareUrl()">tap to copy link</div>
+    <div class="player-slots">
+      <div class="player-slot connected"><div class="waiting-label">Player 1</div><div id="slotP1Name">---</div></div>
+      <div class="player-slot" id="slotP2"><div class="waiting-label">Player 2</div><div id="slotP2Name">waiting...</div></div>
+    </div>
+    <button class="btn-outline-sm" onclick="leaveRoom()">Cancel</button>
   </div>
-  <div class="waiting-spinner"></div>
-  <button class="btn-primary btn-outline" style="max-width:200px;margin-top:12px" onclick="leaveRoom()">← Back</button>
 </div>
 
-<!-- ═══════════ SCREEN: GAME ═══════════ -->
+<!-- SCREEN: GAME -->
 <div id="screenGame" class="screen">
   <div class="game-header">
-    <div class="game-header-left">
-      <button class="game-back-btn" onclick="leaveRoom()">←</button>
-      <span class="game-title-sm font-display">Maria's Word Vault</span>
-    </div>
-    <div class="game-header-right">
-      <div class="hud-badge">⏱ <span class="val" id="hudTimer">0:00</span></div>
-      <div class="hud-badge" id="hudScoreBadge">✓ <span class="val" id="hudScore">0</span></div>
+    <button class="hud-back" onclick="leaveRoom()">✕</button>
+    <div class="hud-title font-display" id="hudTitle">Puzzle</div>
+    <div class="hud-right">
+      <div class="hud-score font-mono" id="hudScore">0/6</div>
+      <div class="hud-timer font-mono" id="hudTimer">0:00</div>
     </div>
   </div>
-
-  <div class="clue-bar" id="clueBar" onclick="toggleClueDrawer()">
-    <span class="clue-number" id="activeClueNum">—</span>
-    <span class="clue-text" id="activeClueText">Tap a cell to begin</span>
+  <div class="clue-bar">
+    <span class="clue-bar-num" id="activeClueNum">—</span>
+    <span class="clue-bar-text" id="activeClueText">Tap a cell to begin</span>
   </div>
-
   <div class="grid-wrapper" id="gridWrapper">
     <div class="crossword-grid" id="crosswordGrid"></div>
   </div>
-
-  <div class="keyboard-bar">
-    <button class="kb-btn active" id="btnAcross" onclick="setDirection('across')">ACROSS →</button>
-    <button class="kb-btn" id="btnDown" onclick="setDirection('down')">DOWN ↓</button>
-    <button class="kb-btn-icon" onclick="toggleClueDrawer()" title="Show clues">☰</button>
+  <div class="dir-bar">
+    <button class="dir-btn active" id="btnAcross" onclick="setDirection('across')">Across →</button>
+    <button class="dir-btn" id="btnDown" onclick="setDirection('down')">Down ↓</button>
+    <button class="dir-btn-clue" onclick="toggleClueDrawer()" title="Show clues">☰</button>
   </div>
-
-  <!-- Clue drawer -->
+  <div class="osk" id="osk">
+    <div class="osk-row">
+      <button class="osk-key" data-key="Q">Q</button><button class="osk-key" data-key="W">W</button><button class="osk-key" data-key="E">E</button><button class="osk-key" data-key="R">R</button><button class="osk-key" data-key="T">T</button><button class="osk-key" data-key="Y">Y</button><button class="osk-key" data-key="U">U</button><button class="osk-key" data-key="I">I</button><button class="osk-key" data-key="O">O</button><button class="osk-key" data-key="P">P</button>
+    </div>
+    <div class="osk-row">
+      <button class="osk-key" data-key="A">A</button><button class="osk-key" data-key="S">S</button><button class="osk-key" data-key="D">D</button><button class="osk-key" data-key="F">F</button><button class="osk-key" data-key="G">G</button><button class="osk-key" data-key="H">H</button><button class="osk-key" data-key="J">J</button><button class="osk-key" data-key="K">K</button><button class="osk-key" data-key="L">L</button>
+    </div>
+    <div class="osk-row">
+      <button class="osk-key wide accent" data-key="TOGGLE">⇄ DIR</button><button class="osk-key" data-key="Z">Z</button><button class="osk-key" data-key="X">X</button><button class="osk-key" data-key="C">C</button><button class="osk-key" data-key="V">V</button><button class="osk-key" data-key="B">B</button><button class="osk-key" data-key="N">N</button><button class="osk-key" data-key="M">M</button><button class="osk-key wide" data-key="BACKSPACE">⌫</button>
+    </div>
+  </div>
   <div class="clue-drawer" id="clueDrawer">
     <div class="clue-drawer-handle" onclick="toggleClueDrawer()"></div>
-    <div class="clue-section">
-      <div class="clue-section-title">Across</div>
-      <div id="clueListAcross"></div>
-    </div>
-    <div class="clue-section">
-      <div class="clue-section-title">Down</div>
-      <div id="clueListDown"></div>
-    </div>
+    <div class="clue-section"><div class="clue-section-title">Across</div><div id="clueListAcross"></div></div>
+    <div class="clue-section"><div class="clue-section-title">Down</div><div id="clueListDown"></div></div>
   </div>
 </div>
 
-<!-- ═══════════ SCREEN: WIN ═══════════ -->
+<!-- SCREEN: WIN -->
 <div id="screenWin" class="screen">
   <div class="win-ornament">🏆</div>
   <div class="win-title font-display" id="winTitle">Puzzle Complete!</div>
@@ -809,17 +422,15 @@ body::before {
   <button class="btn-primary btn-gold" style="max-width:240px" onclick="backToLobby()">Play Again</button>
 </div>
 
-<!-- ═══════════ FIREBASE SDK ═══════════ -->
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script>
-/* ═══════════════════════════════════════════════════════ */
-/*  MARIA'S WORD VAULT — Game Engine                      */
-/* ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════ */
+/*  MARIA'S WORD VAULT — Engine                   */
+/* ═══════════════════════════════════════════════ */
 
-// Firebase config — DO NOT CHANGE
-const firebaseConfig = {
+firebase.initializeApp({
   apiKey: "AIzaSyDkqQsKeNwL4qL5e-J1P5S3UE1puzcOaC0",
   authDomain: "marias-word-vault.firebaseapp.com",
   databaseURL: "https://marias-word-vault-default-rtdb.firebaseio.com",
@@ -827,344 +438,228 @@ const firebaseConfig = {
   storageBucket: "marias-word-vault.firebasestorage.app",
   messagingSenderId: "605567866404",
   appId: "1:605567866404:web:9dc0e6543e20e11105eab1"
-};
-
-firebase.initializeApp(firebaseConfig);
+});
 const db = firebase.database();
 
-/* ═══════════ STATE ═══════════ */
-let state = {
-  playerName: '',
-  playerId: '',
-  roomCode: '',
-  mode: 'solo',
-  puzzleType: 'random',
-  puzzle: null,
-  grid: [],
-  selectedCell: null,
-  direction: 'across',
-  clues: { across: [], down: [] },
-  answers: {},
-  scores: { p1: 0, p2: 0 },
-  timerStart: null,
-  timerInterval: null,
-  roomRef: null,
-  customPuzzles: [],
-  selectedCustomPuzzle: null,
-  gameComplete: false,
-  listeners: [],
+/* STATE */
+const state = {
+  playerName:'', playerId:'', roomCode:'', mode:'solo',
+  puzzleType:'random', puzzle:null, grid:[],
+  selectedCell:null, direction:'across',
+  clues:{across:[],down:[]}, answers:{},
+  scores:{p1:0,p2:0},
+  timerStart:null, timerInterval:null, roomRef:null,
+  customPuzzles:[], gameComplete:false,
 };
 
-/* ═══════════ EMBEDDED PUZZLES (REAL CLUES) ═══════════ */
+/* ═══ EMBEDDED FALLBACK PUZZLES ═══ */
 const EMBEDDED_PUZZLES = [
-  {
-    "title": "Morning Brew",
-    "size": 9,
-    "words": [
-      {"answer":"TOAST","clue":"Breakfast bread","row":4,"col":2,"dir":"across","number":6},
-      {"answer":"STEAM","clue":"Rising from a hot cup","row":1,"col":4,"dir":"down","number":3},
-      {"answer":"STARE","clue":"Gaze intently","row":3,"col":2,"dir":"down","number":5},
-      {"answer":"TASTE","clue":"Sense on the tongue","row":1,"col":6,"dir":"down","number":4},
-      {"answer":"TREAT","clue":"Halloween handout","row":7,"col":0,"dir":"across","number":7},
-      {"answer":"TALES","clue":"Bedtime stories","row":1,"col":0,"dir":"across","number":2},
-      {"answer":"STORE","clue":"Shop","row":0,"col":0,"dir":"down","number":1}
-    ]
-  },
-  {
-    "title": "City Lights",
-    "size": 9,
-    "words": [
-      {"answer":"TOWER","clue":"Eiffel or Babel","row":4,"col":2,"dir":"across","number":6},
-      {"answer":"METRO","clue":"Subway system","row":2,"col":2,"dir":"down","number":4},
-      {"answer":"ROUTE","clue":"Planned path","row":0,"col":5,"dir":"down","number":2},
-      {"answer":"STONE","clue":"Rock, or a Rolling one","row":6,"col":0,"dir":"across","number":7},
-      {"answer":"OUTER","clue":"Not inner","row":2,"col":4,"dir":"across","number":5},
-      {"answer":"VOTER","clue":"Election participant","row":0,"col":1,"dir":"across","number":1},
-      {"answer":"TORN","clue":"Ripped","row":0,"col":8,"dir":"down","number":3}
-    ]
-  },
-  {
-    "title": "Garden Path",
-    "size": 9,
-    "words": [
-      {"answer":"PLANT","clue":"Put in the ground","row":4,"col":2,"dir":"across","number":4},
-      {"answer":"PETAL","clue":"Rose part","row":1,"col":4,"dir":"down","number":1},
-      {"answer":"APPLE","clue":"Pie fruit","row":2,"col":2,"dir":"down","number":3},
-      {"answer":"PANEL","clue":"Discussion group","row":2,"col":1,"dir":"across","number":2},
-      {"answer":"TRAIL","clue":"Hiking path","row":4,"col":6,"dir":"down","number":5},
-      {"answer":"PAINT","clue":"Canvas medium","row":7,"col":4,"dir":"across","number":7},
-      {"answer":"PLATE","clue":"Dinner dish","row":4,"col":8,"dir":"down","number":6}
-    ]
-  },
-  {
-    "title": "Ocean View",
-    "size": 9,
-    "words": [
-      {"answer":"SHORE","clue":"Beach edge","row":4,"col":2,"dir":"across","number":4},
-      {"answer":"HORSE","clue":"Riding animal","row":3,"col":4,"dir":"down","number":2},
-      {"answer":"HASTE","clue":"Hurry","row":2,"col":2,"dir":"down","number":1},
-      {"answer":"HEART","clue":"Pumping organ","row":3,"col":6,"dir":"down","number":3},
-      {"answer":"HEAT","clue":"Summer complaint","row":7,"col":3,"dir":"across","number":5}
-    ]
-  },
-  {
-    "title": "Night Sky",
-    "size": 9,
-    "words": [
-      {"answer":"STARS","clue":"Twinkle in the sky","row":4,"col":2,"dir":"across","number":7},
-      {"answer":"SMART","clue":"Clever","row":2,"col":4,"dir":"down","number":6},
-      {"answer":"STORM","clue":"Thunder and lightning","row":6,"col":3,"dir":"across","number":8},
-      {"answer":"ROAST","clue":"Cook in the oven","row":1,"col":2,"dir":"down","number":4},
-      {"answer":"MARTS","clue":"Discount stores","row":0,"col":6,"dir":"down","number":2},
-      {"answer":"TRAMS","clue":"City rail cars","row":0,"col":3,"dir":"across","number":1},
-      {"answer":"ATOMS","clue":"Tiny particles","row":2,"col":0,"dir":"across","number":5},
-      {"answer":"MAST","clue":"Ship's pole","row":1,"col":0,"dir":"down","number":3}
-    ]
-  }
+  {"title":"Spark","size":5,"gridData":[["B","L","A","R","E"],["A","#","U","#","R"],["L","I","N","E","R"],["E","#","T","#","E"],["D","O","S","E","D"]],"clues":{"across":[{"number":1,"clue":"Trumpet sound","answer":"BLARE","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Ocean vessel","answer":"LINER","row":2,"col":0,"dir":"across"},{"number":7,"clue":"Gave out medicine","answer":"DOSED","row":4,"col":0,"dir":"across"}],"down":[{"number":1,"clue":"Made into bundles","answer":"BALED","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Parents' sisters","answer":"AUNTS","row":0,"col":2,"dir":"down"},{"number":3,"clue":"Made a mistake","answer":"ERRED","row":0,"col":4,"dir":"down"}]},"answers":{"across_1":"BLARE","across_4":"LINER","across_7":"DOSED","down_1":"BALED","down_2":"AUNTS","down_3":"ERRED"}},
+  {"title":"Harbor","size":5,"gridData":[["C","R","A","N","E"],["H","#","E","#","V"],["A","D","O","R","E"],["R","#","N","#","N"],["T","E","S","T","S"]],"clues":{"across":[{"number":1,"clue":"Construction machine or bird","answer":"CRANE","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Worship","answer":"ADORE","row":2,"col":0,"dir":"across"},{"number":7,"clue":"Final exams","answer":"TESTS","row":4,"col":0,"dir":"across"}],"down":[{"number":1,"clue":"Navigation map","answer":"CHART","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Very long time periods","answer":"AEONS","row":0,"col":2,"dir":"down"},{"number":3,"clue":"Makes the score equal","answer":"EVENS","row":0,"col":4,"dir":"down"}]},"answers":{"across_1":"CRANE","across_4":"ADORE","across_7":"TESTS","down_1":"CHART","down_2":"AEONS","down_3":"EVENS"}},
+  {"title":"Autumn","size":5,"gridData":[["M","A","P","L","E"],["I","#","E","#","A"],["L","I","N","E","R"],["E","#","N","#","E"],["S","T","E","E","D"]],"clues":{"across":[{"number":1,"clue":"Syrup tree","answer":"MAPLE","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Ship or jacket inner layer","answer":"LINER","row":2,"col":0,"dir":"across"},{"number":7,"clue":"Noble horse","answer":"STEED","row":4,"col":0,"dir":"across"}],"down":[{"number":1,"clue":"Distance units","answer":"MILES","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Tube-shaped pasta","answer":"PENNE","row":0,"col":2,"dir":"down"},{"number":3,"clue":"Like a rabbit, feature-wise","answer":"EARED","row":0,"col":4,"dir":"down"}]},"answers":{"across_1":"MAPLE","across_4":"LINER","across_7":"STEED","down_1":"MILES","down_2":"PENNE","down_3":"EARED"}},
+  {"title":"Focus","size":5,"gridData":[["S","C","O","P","E"],["E","#","W","#","A"],["T","O","N","E","R"],["U","#","E","#","N"],["P","E","R","K","S"]],"clues":{"across":[{"number":1,"clue":"Range of view","answer":"SCOPE","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Printer cartridge","answer":"TONER","row":2,"col":0,"dir":"across"},{"number":7,"clue":"Job benefits","answer":"PERKS","row":4,"col":0,"dir":"across"}],"down":[{"number":1,"clue":"Arrangement","answer":"SETUP","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Property holder","answer":"OWNER","row":0,"col":2,"dir":"down"},{"number":3,"clue":"Makes money","answer":"EARNS","row":0,"col":4,"dir":"down"}]},"answers":{"across_1":"SCOPE","across_4":"TONER","across_7":"PERKS","down_1":"SETUP","down_2":"OWNER","down_3":"EARNS"}},
+  {"title":"Breeze","size":5,"gridData":[["G","R","A","I","N"],["R","#","L","#","E"],["O","Z","O","N","E"],["A","#","E","#","D"],["N","E","S","T","S"]],"clues":{"across":[{"number":1,"clue":"Wheat or rice, e.g.","answer":"GRAIN","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Earth's protective layer","answer":"OZONE","row":2,"col":0,"dir":"across"},{"number":7,"clue":"Bird homes","answer":"NESTS","row":4,"col":0,"dir":"across"}],"down":[{"number":1,"clue":"Sound of pain","answer":"GROAN","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Soothing plants","answer":"ALOES","row":0,"col":2,"dir":"down"},{"number":3,"clue":"Requirements","answer":"NEEDS","row":0,"col":4,"dir":"down"}]},"answers":{"across_1":"GRAIN","across_4":"OZONE","across_7":"NESTS","down_1":"GROAN","down_2":"ALOES","down_3":"NEEDS"}},
+  {"title":"Ember","size":5,"gridData":[["T","R","A","D","E"],["O","#","B","#","L"],["O","L","I","V","E"],["L","#","D","#","C"],["S","P","E","N","T"]],"clues":{"across":[{"number":1,"clue":"Swap or exchange","answer":"TRADE","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Martini garnish","answer":"OLIVE","row":2,"col":0,"dir":"across"},{"number":7,"clue":"Used up","answer":"SPENT","row":4,"col":0,"dir":"across"}],"down":[{"number":1,"clue":"Hammer and wrench, e.g.","answer":"TOOLS","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Put up with","answer":"ABIDE","row":0,"col":2,"dir":"down"},{"number":3,"clue":"Choose by voting","answer":"ELECT","row":0,"col":4,"dir":"down"}]},"answers":{"across_1":"TRADE","across_4":"OLIVE","across_7":"SPENT","down_1":"TOOLS","down_2":"ABIDE","down_3":"ELECT"}}
 ];
 
-/* ═══════════ PUZZLE ENGINE ═══════════ */
+/* ═══ API PUZZLE GENERATOR ═══ */
+async function fetchWords(pattern) {
+  const url = `https://api.datamuse.com/words?sp=${encodeURIComponent(pattern)}&md=d&max=30`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return data.filter(w => w.word.length === pattern.length && /^[a-z]+$/.test(w.word) && w.defs && w.defs.length > 0)
+    .map(w => ({ word: w.word.toUpperCase(), clue: cleanDef(w.defs[0]) }));
+}
 
-function buildPuzzleFromEmbedded(data) {
-  const size = data.size;
-  const gridData = Array.from({ length: size }, () => Array(size).fill('#'));
+function cleanDef(d) {
+  const p = d.split('\t');
+  let t = p.length > 1 ? p[1] : p[0];
+  t = t.charAt(0).toUpperCase() + t.slice(1);
+  return t.length > 60 ? t.substring(0, 57) + '...' : t;
+}
 
-  // Place words on grid
-  for (const w of data.words) {
-    for (let i = 0; i < w.answer.length; i++) {
-      const r = w.dir === 'across' ? w.row : w.row + i;
-      const c = w.dir === 'across' ? w.col + i : w.col;
-      if (r < size && c < size) {
-        gridData[r][c] = w.answer[i];
-      }
+function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+
+async function generateAPIPuzzle() {
+  const statusEl = document.getElementById('puzzleStatus');
+  statusEl.innerHTML = '<span class="loading-spinner"></span>Generating fresh puzzle...';
+  try {
+    const seeds = 'abcdefghijklmnoprstw';
+    const letter = seeds[Math.floor(Math.random() * seeds.length)];
+    const pool = await fetchWords(letter + '????');
+    if (pool.length < 3) throw new Error('Insufficient words');
+    // shuffle
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+
+    for (let attempt = 0; attempt < 30; attempt++) {
+      const r0c = pool[attempt % pool.length];
+      const r0 = r0c.word;
+      const [c0p, c2p, c4p] = await Promise.all([
+        fetchWords(r0[0].toLowerCase()+'????'),
+        fetchWords(r0[2].toLowerCase()+'????'),
+        fetchWords(r0[4].toLowerCase()+'????')
+      ]);
+      if (!c0p.length || !c2p.length || !c4p.length) continue;
+      const c0c = pick(c0p), c2c = pick(c2p), c4c = pick(c4p);
+      const c0=c0c.word, c2=c2c.word, c4=c4c.word;
+
+      const r2pat = c0[2].toLowerCase()+'?'+c2[2].toLowerCase()+'?'+c4[2].toLowerCase();
+      const r2p = await fetchWords(r2pat);
+      if (!r2p.length) continue;
+      const r2c = pick(r2p), r2 = r2c.word;
+
+      const r4pat = c0[4].toLowerCase()+'?'+c2[4].toLowerCase()+'?'+c4[4].toLowerCase();
+      const r4p = await fetchWords(r4pat);
+      if (!r4p.length) continue;
+      const r4c = pick(r4p), r4 = r4c.word;
+
+      if (new Set([r0,r2,r4,c0,c2,c4]).size !== 6) continue;
+
+      const S = s => s.split('');
+      statusEl.textContent = '';
+      return {
+        source:'api', title:'Fresh Puzzle', size:5,
+        gridData: [S(r0), [c0[1],'#',c2[1],'#',c4[1]], S(r2), [c0[3],'#',c2[3],'#',c4[3]], S(r4)],
+        clues: {
+          across: [
+            {number:1,clue:r0c.clue,answer:r0,row:0,col:0,dir:'across'},
+            {number:4,clue:r2c.clue,answer:r2,row:2,col:0,dir:'across'},
+            {number:7,clue:r4c.clue,answer:r4,row:4,col:0,dir:'across'}
+          ],
+          down: [
+            {number:1,clue:c0c.clue,answer:c0,row:0,col:0,dir:'down'},
+            {number:2,clue:c2c.clue,answer:c2,row:0,col:2,dir:'down'},
+            {number:3,clue:c4c.clue,answer:c4,row:0,col:4,dir:'down'}
+          ]
+        },
+        answers:{across_1:r0,across_4:r2,across_7:r4,down_1:c0,down_2:c2,down_3:c4}
+      };
     }
+    throw new Error('No valid combo found');
+  } catch(e) {
+    console.log('API fallback:', e.message);
+    statusEl.textContent = '';
+    return getEmbeddedPuzzle();
   }
-
-  const across = data.words.filter(w => w.dir === 'across').map(w => ({
-    number: w.number, clue: w.clue, answer: w.answer,
-    row: w.row, col: w.col, dir: 'across'
-  }));
-  const down = data.words.filter(w => w.dir === 'down').map(w => ({
-    number: w.number, clue: w.clue, answer: w.answer,
-    row: w.row, col: w.col, dir: 'down'
-  }));
-
-  const answers = {};
-  for (const w of data.words) {
-    answers[`${w.dir}_${w.number}`] = w.answer;
-  }
-
-  return {
-    source: 'embedded',
-    title: data.title,
-    gridData,
-    clues: { across, down },
-    answers
-  };
 }
 
-function getRandomPuzzle() {
-  const idx = Math.floor(Math.random() * EMBEDDED_PUZZLES.length);
-  return buildPuzzleFromEmbedded(EMBEDDED_PUZZLES[idx]);
+function getEmbeddedPuzzle() {
+  const p = EMBEDDED_PUZZLES[Math.floor(Math.random()*EMBEDDED_PUZZLES.length)];
+  return {source:'embedded', ...p};
 }
 
+/* ═══ CUSTOM PUZZLES ═══ */
 async function fetchCustomPuzzles() {
   try {
     const snap = await db.ref('custom_puzzles').orderByChild('created').limitToLast(20).once('value');
     const puzzles = [];
-    snap.forEach(child => {
-      puzzles.push({ id: child.key, ...child.val() });
-    });
+    snap.forEach(c => puzzles.push({id:c.key,...c.val()}));
     state.customPuzzles = puzzles.reverse();
     renderCustomPuzzleSelect();
-  } catch (e) {
-    console.log('No custom puzzles found:', e.message);
-  }
+  } catch(e) { console.log('No custom puzzles:', e.message); }
 }
-
 function renderCustomPuzzleSelect() {
   const sel = document.getElementById('customPuzzleSelect');
-  sel.innerHTML = '';
-  if (state.customPuzzles.length === 0) {
-    sel.innerHTML = '<option value="">No family puzzles yet — build one!</option>';
-    return;
-  }
-  sel.innerHTML = '<option value="">Choose a puzzle...</option>';
+  sel.innerHTML = state.customPuzzles.length === 0
+    ? '<option value="">No family puzzles yet — build one!</option>'
+    : '<option value="">Choose a puzzle...</option>';
   for (const p of state.customPuzzles) {
-    const opt = document.createElement('option');
-    opt.value = p.id;
-    opt.textContent = p.title || 'Untitled Puzzle';
-    sel.appendChild(opt);
+    const o = document.createElement('option'); o.value=p.id; o.textContent=p.title||'Untitled'; sel.appendChild(o);
   }
 }
 
-/* ═══════════ UI HELPERS ═══════════ */
-
+/* ═══ UI HELPERS ═══ */
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
-
-function setMode(mode) {
+function setMode(mode, el) {
   state.mode = mode;
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
-  event.target.classList.add('selected');
-
+  if (el) el.classList.add('selected');
   const roomArea = document.getElementById('roomArea');
   const btnPlay = document.getElementById('btnPlay');
-
-  if (mode === 'solo') {
-    roomArea.style.display = 'none';
-    btnPlay.textContent = 'Begin Puzzle';
-    btnPlay.onclick = startGame;
-    btnPlay.style.display = '';
-  } else {
-    roomArea.style.display = '';
-    btnPlay.textContent = 'Create Room';
-    btnPlay.onclick = createRoom;
-    btnPlay.style.display = '';
-  }
+  if (mode === 'solo') { roomArea.style.display='none'; btnPlay.textContent='Begin Puzzle'; btnPlay.onclick=startGame; }
+  else { roomArea.style.display=''; btnPlay.textContent='Create Room'; btnPlay.onclick=createRoom; }
 }
-
-function setPuzzleType(type) {
+function setPuzzleType(type, el) {
   state.puzzleType = type;
   document.querySelectorAll('.puzzle-btn').forEach(b => b.classList.remove('selected'));
-  event.target.classList.add('selected');
-  document.getElementById('customPuzzleArea').style.display = type === 'custom' ? '' : 'none';
-  if (type === 'custom') fetchCustomPuzzles();
+  if (el) el.classList.add('selected');
+  document.getElementById('customPuzzleArea').style.display = type==='custom'?'':'none';
+  if (type==='custom') fetchCustomPuzzles();
 }
-
 function setDirection(dir) {
   state.direction = dir;
-  document.getElementById('btnAcross').classList.toggle('active', dir === 'across');
-  document.getElementById('btnDown').classList.toggle('active', dir === 'down');
-  if (state.selectedCell) {
-    highlightWord();
-    updateActiveClue();
-  }
+  document.getElementById('btnAcross').classList.toggle('active', dir==='across');
+  document.getElementById('btnDown').classList.toggle('active', dir==='down');
+  if (state.selectedCell) { highlightWord(); updateActiveClue(); }
 }
+function toggleClueDrawer() { document.getElementById('clueDrawer').classList.toggle('open'); }
 
-function toggleClueDrawer() {
-  document.getElementById('clueDrawer').classList.toggle('open');
-}
-
-/* ═══════════ GAME FLOW ═══════════ */
-
-function startGame() {
+/* ═══ GAME FLOW ═══ */
+async function startGame() {
   const name = document.getElementById('inputName').value.trim();
   if (!name) { document.getElementById('inputName').focus(); return; }
-
-  state.playerName = name;
-  state.playerId = 'solo';
-  state.mode = 'solo';
-
+  state.playerName=name; state.playerId='solo'; state.mode='solo';
   let puzzle;
-  if (state.puzzleType === 'custom') {
-    const sel = document.getElementById('customPuzzleSelect');
-    const id = sel.value;
-    if (!id) { alert('Pick a family puzzle!'); return; }
-    const found = state.customPuzzles.find(p => p.id === id);
-    if (found) {
-      puzzle = found;
-    } else {
-      puzzle = getRandomPuzzle();
-    }
-  } else {
-    puzzle = getRandomPuzzle();
-  }
-
+  if (state.puzzleType==='custom') {
+    const id = document.getElementById('customPuzzleSelect').value;
+    const found = state.customPuzzles.find(p=>p.id===id);
+    puzzle = found ? {source:'custom',...found} : await generateAPIPuzzle();
+  } else { puzzle = await generateAPIPuzzle(); }
   state.puzzle = puzzle;
   initGame();
 }
-
-function createRoom() {
+async function createRoom() {
   const name = document.getElementById('inputName').value.trim();
   if (!name) { document.getElementById('inputName').focus(); return; }
-
-  state.playerName = name;
-  state.playerId = 'p1';
-  state.roomCode = generateRoomCode();
-
+  state.playerName=name; state.playerId='p1';
+  state.roomCode = genRoomCode();
   let puzzle;
-  if (state.puzzleType === 'custom') {
-    const sel = document.getElementById('customPuzzleSelect');
-    const id = sel.value;
-    const found = state.customPuzzles.find(p => p.id === id);
-    puzzle = found || getRandomPuzzle();
-  } else {
-    puzzle = getRandomPuzzle();
-  }
-
+  if (state.puzzleType==='custom') {
+    const id = document.getElementById('customPuzzleSelect').value;
+    const found = state.customPuzzles.find(p=>p.id===id);
+    puzzle = found ? {source:'custom',...found} : await generateAPIPuzzle();
+  } else { puzzle = await generateAPIPuzzle(); }
   state.puzzle = puzzle;
-
-  const roomRef = db.ref('rooms/' + state.roomCode);
-  state.roomRef = roomRef;
-
-  roomRef.set({
-    p1: { name: state.playerName, connected: true },
-    p2: { name: '', connected: false },
-    mode: state.mode,
-    puzzle: puzzle,
-    cells: {},
-    scores: { p1: 0, p2: 0 },
-    cursors: {},
-    status: 'waiting',
-    timerStart: null,
-    created: firebase.database.ServerValue.TIMESTAMP
+  const ref = db.ref('rooms/'+state.roomCode);
+  state.roomRef = ref;
+  ref.set({
+    p1:{name:state.playerName,connected:true}, p2:{name:'',connected:false},
+    mode:state.mode, puzzle, cells:{}, scores:{p1:0,p2:0}, cursors:{},
+    status:'waiting', timerStart:null,
+    created:firebase.database.ServerValue.TIMESTAMP
   });
-
-  // Show waiting screen
   document.getElementById('waitingRoomCode').textContent = state.roomCode;
-  const shareLink = `${window.location.origin}${window.location.pathname}?room=${state.roomCode}`;
-  document.getElementById('shareUrl').textContent = shareLink;
+  const link = `${location.origin}${location.pathname}?room=${state.roomCode}`;
+  document.getElementById('shareUrl').textContent = link;
   document.getElementById('slotP1Name').textContent = state.playerName;
   showScreen('screenWaiting');
-
-  // Listen for p2
-  roomRef.child('p2').on('value', snap => {
+  ref.child('p2').on('value', snap => {
     const p2 = snap.val();
     if (p2 && p2.connected) {
       document.getElementById('slotP2').classList.add('connected');
       document.getElementById('slotP2Name').textContent = p2.name;
-      // Start game
-      roomRef.update({ status: 'playing', timerStart: firebase.database.ServerValue.TIMESTAMP });
+      ref.update({status:'playing', timerStart:firebase.database.ServerValue.TIMESTAMP});
       initGame();
     }
   });
 }
-
 function joinRoom() {
   const name = document.getElementById('inputName').value.trim();
   const code = document.getElementById('inputRoom').value.trim().toUpperCase();
   if (!name) { document.getElementById('inputName').focus(); return; }
-  if (!code || code.length < 4) { document.getElementById('inputRoom').focus(); return; }
-
-  state.playerName = name;
-  state.roomCode = code;
-  state.playerId = 'p2';
-
-  const roomRef = db.ref('rooms/' + code);
-  state.roomRef = roomRef;
-
-  roomRef.once('value').then(snap => {
-    if (!snap.exists()) {
-      alert('Room not found!');
-      return;
-    }
+  if (!code||code.length<4) { document.getElementById('inputRoom').focus(); return; }
+  state.playerName=name; state.roomCode=code; state.playerId='p2';
+  const ref = db.ref('rooms/'+code);
+  state.roomRef = ref;
+  ref.once('value').then(snap => {
+    if (!snap.exists()) { alert('Room not found!'); return; }
     const room = snap.val();
-    state.mode = room.mode;
-    state.puzzle = room.puzzle;
-
-    roomRef.child('p2').set({ name: state.playerName, connected: true });
-
-    // Listen for status change
-    roomRef.child('status').on('value', snap => {
-      if (snap.val() === 'playing') {
-        initGame();
-      }
-    });
-
-    // Show waiting briefly
+    state.mode = room.mode; state.puzzle = room.puzzle;
+    ref.child('p2').set({name:state.playerName,connected:true});
+    ref.child('status').on('value', s => { if (s.val()==='playing') initGame(); });
     document.getElementById('waitingRoomCode').textContent = code;
     document.getElementById('slotP1Name').textContent = room.p1.name;
     document.getElementById('slotP2Name').textContent = state.playerName;
@@ -1172,709 +667,371 @@ function joinRoom() {
     showScreen('screenWaiting');
   });
 }
-
-function generateRoomCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-  let code = '';
-  for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
+function genRoomCode() {
+  const c='ABCDEFGHJKLMNPQRSTUVWXYZ'; let s='';
+  for (let i=0;i<5;i++) s+=c[Math.floor(Math.random()*c.length)];
+  return s;
 }
-
 function copyShareUrl() {
-  const text = document.getElementById('shareUrl').textContent;
-  navigator.clipboard?.writeText(text);
-  document.getElementById('shareUrl').textContent = '✓ Copied!';
-  setTimeout(() => {
-    document.getElementById('shareUrl').textContent = text;
-  }, 2000);
+  const el = document.getElementById('shareUrl');
+  const t = el.textContent;
+  navigator.clipboard?.writeText(t);
+  el.textContent = '✓ Copied!';
+  setTimeout(()=>{ el.textContent=t; }, 2000);
 }
 
-/* ═══════════ INIT GAME ═══════════ */
-
+/* ═══ INIT GAME ═══ */
 function initGame() {
-  state.gameComplete = false;
-  state.scores = { p1: 0, p2: 0 };
-  state.selectedCell = null;
-  state.direction = 'across';
-
+  state.gameComplete=false; state.scores={p1:0,p2:0};
+  state.selectedCell=null; state.direction='across';
   const puzzle = state.puzzle;
-  const gridData = puzzle.gridData;
-  const rows = gridData.length;
-  const cols = gridData[0].length;
-
-  // Build internal grid
+  const gd = puzzle.gridData;
+  const rows = gd.length, cols = gd[0].length;
   state.grid = [];
-  for (let r = 0; r < rows; r++) {
-    state.grid[r] = [];
-    for (let c = 0; c < cols; c++) {
-      const isBlack = gridData[r][c] === '#';
+  for (let r=0;r<rows;r++) {
+    state.grid[r]=[];
+    for (let c=0;c<cols;c++) {
+      const isBlack = gd[r][c]==='#';
       state.grid[r][c] = {
-        letter: isBlack ? '#' : gridData[r][c],
-        isBlack,
-        number: null,
-        filled: { shared: '', p1: '', p2: '' },
-        acrossClue: null,
-        downClue: null,
+        letter: isBlack?'#':gd[r][c], isBlack, number:null,
+        filled:{shared:'',p1:'',p2:''}, acrossClue:null, downClue:null
       };
     }
   }
-
-  // Assign clue numbers to cells
   state.clues = puzzle.clues;
-  for (const dir of ['across', 'down']) {
+  state.answers = puzzle.answers||{};
+  for (const dir of ['across','down']) {
     for (const clue of state.clues[dir]) {
-      if (state.grid[clue.row] && state.grid[clue.row][clue.col]) {
-        state.grid[clue.row][clue.col].number = clue.number;
+      if (state.grid[clue.row]?.[clue.col]) state.grid[clue.row][clue.col].number = clue.number;
+      for (let i=0;i<clue.answer.length;i++) {
+        const r = clue.dir==='across'?clue.row:clue.row+i;
+        const c = clue.dir==='across'?clue.col+i:clue.col;
+        if (state.grid[r]?.[c]) {
+          if (dir==='across') state.grid[r][c].acrossClue=clue;
+          else state.grid[r][c].downClue=clue;
+        }
       }
     }
   }
-
-  // Map cells to their clues
-  for (const clue of state.clues.across) {
-    for (let i = 0; i < clue.answer.length; i++) {
-      const c = clue.col + i;
-      if (state.grid[clue.row] && state.grid[clue.row][c]) {
-        state.grid[clue.row][c].acrossClue = clue;
-      }
-    }
-  }
-  for (const clue of state.clues.down) {
-    for (let i = 0; i < clue.answer.length; i++) {
-      const r = clue.row + i;
-      if (state.grid[r] && state.grid[r][clue.col]) {
-        state.grid[r][clue.col].downClue = clue;
-      }
-    }
-  }
-
-  state.answers = puzzle.answers;
-
-  // Build DOM
-  buildGrid(rows, cols);
+  document.getElementById('hudTitle').textContent = puzzle.title||'Puzzle';
+  buildGrid(rows,cols);
   buildCluePanel();
-
-  // Calculate cell size
-  calcAndSetCellSize(rows, cols);
-
-  // Timer
+  calcCellSize(rows,cols);
   state.timerStart = Date.now();
   clearInterval(state.timerInterval);
   state.timerInterval = setInterval(updateTimer, 1000);
-
-  // Show game screen
+  document.getElementById('hudScore').textContent = '0/'+( state.clues.across.length+state.clues.down.length);
   showScreen('screenGame');
-
-  // Update HUD
-  updateHUD();
-
-  // Setup Firebase listeners for multiplayer
-  if (state.mode !== 'solo' && state.roomRef) {
-    listenRoom();
-  }
-
-  // Listen for window resize
-  window.addEventListener('resize', () => calcAndSetCellSize(rows, cols));
+  if (state.mode!=='solo' && state.roomRef) listenRoom();
+  window.addEventListener('resize', ()=>calcCellSize(rows,cols));
 }
 
-function calcAndSetCellSize(rows, cols) {
-  const wrapper = document.getElementById('gridWrapper');
-  const availW = wrapper.clientWidth - 16;
-  const availH = wrapper.clientHeight - 16;
-  const byWidth = Math.floor(availW / cols);
-  const byHeight = Math.floor(availH / rows);
-  const cellSize = Math.min(byWidth, byHeight, 56);
-  document.getElementById('crosswordGrid').style.setProperty('--cell-size', cellSize + 'px');
+function calcCellSize(rows, cols) {
+  const w = document.getElementById('gridWrapper');
+  if (!w) return;
+  const aW = w.clientWidth-16, aH = w.clientHeight-16;
+  const cs = Math.min(Math.floor(aW/cols), Math.floor(aH/rows), 72);
+  document.getElementById('crosswordGrid').style.setProperty('--cell-size', cs+'px');
 }
-
-/* ═══════════ BUILD GRID ═══════════ */
 
 function buildGrid(rows, cols) {
-  const grid = document.getElementById('crosswordGrid');
-  grid.innerHTML = '';
-  grid.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size))`;
-  grid.style.gridTemplateRows = `repeat(${rows}, var(--cell-size))`;
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
+  const g = document.getElementById('crosswordGrid');
+  g.innerHTML='';
+  g.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size))`;
+  g.style.gridTemplateRows = `repeat(${rows}, var(--cell-size))`;
+  for (let r=0;r<rows;r++) {
+    for (let c=0;c<cols;c++) {
       const cell = document.createElement('div');
-      cell.className = 'grid-cell';
-      cell.dataset.row = r;
-      cell.dataset.col = c;
-
-      const data = state.grid[r][c];
-
-      if (data.isBlack) {
-        cell.classList.add('black');
-      } else {
-        // Number
-        if (data.number) {
-          const numEl = document.createElement('span');
-          numEl.className = 'cell-number';
-          numEl.textContent = data.number;
-          cell.appendChild(numEl);
-        }
-
-        // Letter display
-        const letterEl = document.createElement('span');
-        letterEl.className = 'cell-letter';
-        letterEl.id = `letter_${r}_${c}`;
-        cell.appendChild(letterEl);
-
-        // Click handler
-        cell.addEventListener('click', () => handleCellClick(r, c));
-        cell.addEventListener('touchend', (e) => {
-          e.preventDefault();
-          handleCellClick(r, c);
-        });
+      cell.className='grid-cell'; cell.dataset.row=r; cell.dataset.col=c;
+      const d = state.grid[r][c];
+      if (d.isBlack) { cell.classList.add('black'); }
+      else {
+        if (d.number) { const n=document.createElement('span'); n.className='cell-number'; n.textContent=d.number; cell.appendChild(n); }
+        const l = document.createElement('span'); l.className='cell-letter'; l.id=`letter_${r}_${c}`; cell.appendChild(l);
+        cell.addEventListener('click', ()=>handleCellClick(r,c));
       }
-
-      grid.appendChild(cell);
+      g.appendChild(cell);
     }
   }
 }
 
-/* ═══════════ BUILD CLUE PANEL ═══════════ */
-
 function buildCluePanel() {
-  for (const dir of ['across', 'down']) {
-    const container = document.getElementById(dir === 'across' ? 'clueListAcross' : 'clueListDown');
-    container.innerHTML = '';
+  for (const dir of ['across','down']) {
+    const ct = document.getElementById(dir==='across'?'clueListAcross':'clueListDown');
+    ct.innerHTML='';
     for (const clue of state.clues[dir]) {
       const item = document.createElement('div');
-      item.className = 'clue-item';
-      item.id = `clue_${dir}_${clue.number}`;
-      item.innerHTML = `
-        <span class="clue-item-num">${clue.number}</span>
-        <span class="clue-item-text">${clue.clue}</span>
-      `;
-      item.addEventListener('click', () => {
-        state.direction = dir;
-        document.getElementById('btnAcross').classList.toggle('active', dir === 'across');
-        document.getElementById('btnDown').classList.toggle('active', dir === 'down');
+      item.className='clue-item'; item.id=`clue_${dir}_${clue.number}`;
+      item.innerHTML = `<span class="clue-item-num">${clue.number}</span><span class="clue-item-text">${clue.clue}</span>`;
+      item.addEventListener('click', ()=>{
+        state.direction=dir;
+        document.getElementById('btnAcross').classList.toggle('active',dir==='across');
+        document.getElementById('btnDown').classList.toggle('active',dir==='down');
         handleCellClick(clue.row, clue.col);
         document.getElementById('clueDrawer').classList.remove('open');
       });
-      container.appendChild(item);
+      ct.appendChild(item);
     }
   }
 }
 
-/* ═══════════ CELL INTERACTION ═══════════ */
-
-function handleCellClick(r, c) {
+/* ═══ CELL INTERACTION ═══ */
+function handleCellClick(r,c) {
   if (state.grid[r][c].isBlack) return;
-
-  // If clicking the same cell, toggle direction
-  if (state.selectedCell && state.selectedCell.row === r && state.selectedCell.col === c) {
-    state.direction = state.direction === 'across' ? 'down' : 'across';
-    document.getElementById('btnAcross').classList.toggle('active', state.direction === 'across');
-    document.getElementById('btnDown').classList.toggle('active', state.direction === 'down');
+  if (state.selectedCell && state.selectedCell.row===r && state.selectedCell.col===c) {
+    state.direction = state.direction==='across'?'down':'across';
+    document.getElementById('btnAcross').classList.toggle('active',state.direction==='across');
+    document.getElementById('btnDown').classList.toggle('active',state.direction==='down');
   }
-
-  state.selectedCell = { row: r, col: c };
-  highlightWord();
-  updateActiveClue();
-  focusHiddenInput();
-
-  // Sync cursor to Firebase
-  if (state.roomRef) {
-    state.roomRef.child(`cursors/${state.playerId}`).set({ row: r, col: c });
-  }
+  state.selectedCell={row:r,col:c};
+  highlightWord(); updateActiveClue();
+  if (state.roomRef) state.roomRef.child(`cursors/${state.playerId}`).set({row:r,col:c});
 }
 
 function highlightWord() {
-  // Clear all highlights
-  document.querySelectorAll('.grid-cell').forEach(el => {
-    el.classList.remove('selected', 'word-highlight');
-  });
-
+  document.querySelectorAll('.grid-cell').forEach(e => e.classList.remove('selected','word-highlight'));
   if (!state.selectedCell) return;
-
-  const { row, col } = state.selectedCell;
-  const dir = state.direction;
-  const cellData = state.grid[row][col];
-  const clue = dir === 'across' ? cellData.acrossClue : cellData.downClue;
-
-  // If no clue in this direction, try the other
+  const {row,col}=state.selectedCell;
+  const cd = state.grid[row][col];
+  let clue = state.direction==='across'?cd.acrossClue:cd.downClue;
   if (!clue) {
-    const altClue = dir === 'across' ? cellData.downClue : cellData.acrossClue;
-    if (altClue) {
-      state.direction = dir === 'across' ? 'down' : 'across';
-      document.getElementById('btnAcross').classList.toggle('active', state.direction === 'across');
-      document.getElementById('btnDown').classList.toggle('active', state.direction === 'down');
-      highlightWord();
-      return;
+    const alt = state.direction==='across'?cd.downClue:cd.acrossClue;
+    if (alt) {
+      state.direction = state.direction==='across'?'down':'across';
+      document.getElementById('btnAcross').classList.toggle('active',state.direction==='across');
+      document.getElementById('btnDown').classList.toggle('active',state.direction==='down');
+      clue=alt;
     }
   }
-
   if (clue) {
-    // Highlight all cells in this word
-    for (let i = 0; i < clue.answer.length; i++) {
-      const cr = clue.dir === 'across' ? clue.row : clue.row + i;
-      const cc = clue.dir === 'across' ? clue.col + i : clue.col;
-      const el = getCellElement(cr, cc);
-      if (el) el.classList.add('word-highlight');
+    for (let i=0;i<clue.answer.length;i++) {
+      const cr=clue.dir==='across'?clue.row:clue.row+i;
+      const cc=clue.dir==='across'?clue.col+i:clue.col;
+      const el=getCellEl(cr,cc); if(el) el.classList.add('word-highlight');
     }
   }
-
-  // Highlight active cell
-  const activeEl = getCellElement(row, col);
-  if (activeEl) activeEl.classList.add('selected');
+  const ae=getCellEl(row,col); if(ae) ae.classList.add('selected');
 }
 
 function updateActiveClue() {
   if (!state.selectedCell) return;
-  const { row, col } = state.selectedCell;
-  const cellData = state.grid[row][col];
-  const clue = state.direction === 'across' ? cellData.acrossClue : cellData.downClue;
-
+  const {row,col}=state.selectedCell;
+  const cd=state.grid[row][col];
+  const clue = state.direction==='across'?cd.acrossClue:cd.downClue;
   if (clue) {
-    document.getElementById('activeClueNum').textContent = `${clue.number} ${clue.dir === 'across' ? 'A' : 'D'}`;
+    document.getElementById('activeClueNum').textContent = `${clue.number}${clue.dir==='across'?'A':'D'}`;
     document.getElementById('activeClueText').textContent = clue.clue;
   }
 }
 
-function getCellElement(r, c) {
-  return document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`);
-}
+function getCellEl(r,c) { return document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`); }
 
-function focusHiddenInput() {
-  const input = document.getElementById('hiddenInput');
-  input.value = '';
-  input.focus({ preventScroll: true });
-}
-
-/* ═══════════ KEYBOARD INPUT ═══════════ */
-
-// Desktop: keydown on document
-document.addEventListener('keydown', handleKeydown);
-
-// Mobile: input event on hidden input
-document.getElementById('hiddenInput').addEventListener('input', (e) => {
-  const val = e.target.value;
-  if (val && val.length > 0) {
-    const letter = val.slice(-1).toUpperCase();
-    if (/^[A-Z]$/.test(letter)) {
-      typeLetter(letter);
-    }
-    e.target.value = '';
+/* ═══ KEYBOARD ═══ */
+document.getElementById('osk').addEventListener('click', e => {
+  const btn=e.target.closest('.osk-key'); if(!btn) return; e.preventDefault();
+  const key=btn.dataset.key;
+  if (key==='BACKSPACE') { handleBackspace(); return; }
+  if (key==='TOGGLE') {
+    state.direction=state.direction==='across'?'down':'across';
+    document.getElementById('btnAcross').classList.toggle('active',state.direction==='across');
+    document.getElementById('btnDown').classList.toggle('active',state.direction==='down');
+    if (state.selectedCell) { highlightWord(); updateActiveClue(); }
+    return;
   }
+  if (/^[A-Z]$/.test(key)) typeLetter(key);
 });
 
-// Also handle backspace via keydown on the hidden input
-document.getElementById('hiddenInput').addEventListener('keydown', (e) => {
-  if (e.key === 'Backspace') {
-    e.preventDefault();
-    handleBackspace();
-  }
-});
-
-function handleKeydown(e) {
+document.addEventListener('keydown', e => {
   if (!state.selectedCell) return;
-  // Don't capture if focused on a form input other than hiddenInput
-  if (document.activeElement && document.activeElement.tagName === 'INPUT' && document.activeElement.id !== 'hiddenInput') return;
-
-  if (e.key === 'ArrowUp') { e.preventDefault(); moveSelection(0, -1); return; }
-  if (e.key === 'ArrowDown') { e.preventDefault(); moveSelection(0, 1); return; }
-  if (e.key === 'ArrowLeft') { e.preventDefault(); moveSelection(-1, 0); return; }
-  if (e.key === 'ArrowRight') { e.preventDefault(); moveSelection(1, 0); return; }
-  if (e.key === 'Tab') {
+  if (document.activeElement?.tagName==='INPUT'||document.activeElement?.tagName==='SELECT') return;
+  if (e.key==='ArrowUp'){e.preventDefault();moveSelection(0,-1);return;}
+  if (e.key==='ArrowDown'){e.preventDefault();moveSelection(0,1);return;}
+  if (e.key==='ArrowLeft'){e.preventDefault();moveSelection(-1,0);return;}
+  if (e.key==='ArrowRight'){e.preventDefault();moveSelection(1,0);return;}
+  if (e.key==='Tab'||e.key===' '){
     e.preventDefault();
-    state.direction = state.direction === 'across' ? 'down' : 'across';
-    document.getElementById('btnAcross').classList.toggle('active', state.direction === 'across');
-    document.getElementById('btnDown').classList.toggle('active', state.direction === 'down');
-    highlightWord();
-    updateActiveClue();
-    return;
+    state.direction=state.direction==='across'?'down':'across';
+    document.getElementById('btnAcross').classList.toggle('active',state.direction==='across');
+    document.getElementById('btnDown').classList.toggle('active',state.direction==='down');
+    highlightWord();updateActiveClue();return;
   }
-  if (e.key === 'Backspace' || e.key === 'Delete') {
-    e.preventDefault();
-    handleBackspace();
-    return;
-  }
-  if (e.key === ' ') {
-    e.preventDefault();
-    // Toggle direction like NYT
-    state.direction = state.direction === 'across' ? 'down' : 'across';
-    document.getElementById('btnAcross').classList.toggle('active', state.direction === 'across');
-    document.getElementById('btnDown').classList.toggle('active', state.direction === 'down');
-    highlightWord();
-    updateActiveClue();
-    return;
-  }
+  if (e.key==='Backspace'||e.key==='Delete'){e.preventDefault();handleBackspace();return;}
+  const l=e.key.toUpperCase();
+  if (/^[A-Z]$/.test(l)){e.preventDefault();typeLetter(l);}
+});
 
-  const letter = e.key.toUpperCase();
-  if (/^[A-Z]$/.test(letter)) {
-    e.preventDefault();
-    typeLetter(letter);
-  }
-}
-
-function typeLetter(letter) {
-  if (!state.selectedCell || state.gameComplete) return;
-  const { row, col } = state.selectedCell;
-
-  setLetter(row, col, letter);
+function typeLetter(l) {
+  if (!state.selectedCell||state.gameComplete) return;
+  setLetter(state.selectedCell.row,state.selectedCell.col,l);
   advanceCursor();
 }
 
 function handleBackspace() {
-  if (!state.selectedCell || state.gameComplete) return;
-  const { row, col } = state.selectedCell;
-
-  // If current cell has a letter, delete it
-  const currentLetter = getDisplayedLetter(row, col);
-  if (currentLetter) {
-    setLetter(row, col, '');
-  } else {
-    // Move back first, then delete
-    retreatCursor();
-    if (state.selectedCell) {
-      const { row: nr, col: nc } = state.selectedCell;
-      setLetter(nr, nc, '');
-    }
-  }
+  if (!state.selectedCell||state.gameComplete) return;
+  const {row,col}=state.selectedCell;
+  if (getDisplayed(row,col)) { setLetter(row,col,''); }
+  else { retreatCursor(); if (state.selectedCell) setLetter(state.selectedCell.row,state.selectedCell.col,''); }
 }
 
-function getDisplayedLetter(r, c) {
-  if (state.mode === 'solo') {
-    return state.grid[r][c].filled.shared || '';
-  } else if (state.mode === 'collaborative') {
-    return state.grid[r][c].filled.shared || '';
-  } else {
-    return state.grid[r][c].filled[state.playerId] || '';
-  }
+function getDisplayed(r,c) {
+  return state.mode==='competitive'?(state.grid[r][c].filled[state.playerId]||''):(state.grid[r][c].filled.shared||'');
 }
 
-function setLetter(row, col, letter) {
-  if (state.mode === 'solo') {
-    state.grid[row][col].filled.shared = letter;
-    updateCellDisplay(row, col);
-    checkCompletion();
+function setLetter(row,col,letter) {
+  if (state.mode==='solo') {
+    state.grid[row][col].filled.shared=letter;
+    updateCellDisplay(row,col); checkCompletion();
   } else if (state.roomRef) {
-    const cellKey = `${row}_${col}`;
-    if (state.mode === 'collaborative') {
-      state.roomRef.child(`cells/${cellKey}`).set({
-        letter: letter,
-        owner: state.playerId
-      });
+    const k=`${row}_${col}`;
+    if (state.mode==='collaborative') {
+      state.roomRef.child(`cells/${k}`).set({letter,owner:state.playerId});
+      state.grid[row][col].filled.shared=letter;
     } else {
-      // Competitive
-      state.roomRef.child(`cells/${cellKey}/${state.playerId}`).set(letter);
+      state.roomRef.child(`cells/${k}/${state.playerId}`).set(letter);
+      state.grid[row][col].filled[state.playerId]=letter;
     }
-    // Also update local for immediate feedback
-    if (state.mode === 'competitive') {
-      state.grid[row][col].filled[state.playerId] = letter;
-    } else {
-      state.grid[row][col].filled.shared = letter;
-    }
-    updateCellDisplay(row, col);
-    checkCompletion();
+    updateCellDisplay(row,col); checkCompletion();
   }
 }
 
-function updateCellDisplay(r, c) {
-  const el = document.getElementById(`letter_${r}_${c}`);
-  if (!el) return;
-
-  let letter;
-  if (state.mode === 'competitive') {
-    letter = state.grid[r][c].filled[state.playerId] || '';
-  } else {
-    letter = state.grid[r][c].filled.shared || '';
-  }
-  el.textContent = letter;
+function updateCellDisplay(r,c) {
+  const el=document.getElementById(`letter_${r}_${c}`); if(!el) return;
+  el.textContent = state.mode==='competitive'?(state.grid[r][c].filled[state.playerId]||''):(state.grid[r][c].filled.shared||'');
 }
 
 function advanceCursor() {
   if (!state.selectedCell) return;
-  let { row, col } = state.selectedCell;
-  const rows = state.grid.length;
-  const cols = state.grid[0].length;
-
-  if (state.direction === 'across') {
-    col++;
-    while (col < cols && state.grid[row][col].isBlack) col++;
-    if (col >= cols) return;
-  } else {
-    row++;
-    while (row < rows && state.grid[row][col].isBlack) row++;
-    if (row >= rows) return;
-  }
-
-  state.selectedCell = { row, col };
-  highlightWord();
-  updateActiveClue();
-
-  if (state.roomRef) {
-    state.roomRef.child(`cursors/${state.playerId}`).set({ row, col });
-  }
+  let {row,col}=state.selectedCell;
+  const R=state.grid.length, C=state.grid[0].length;
+  if (state.direction==='across') { col++; while(col<C&&state.grid[row][col].isBlack) col++; if(col>=C) return; }
+  else { row++; while(row<R&&state.grid[row][col].isBlack) row++; if(row>=R) return; }
+  state.selectedCell={row,col}; highlightWord(); updateActiveClue();
+  if (state.roomRef) state.roomRef.child(`cursors/${state.playerId}`).set({row,col});
 }
 
 function retreatCursor() {
   if (!state.selectedCell) return;
-  let { row, col } = state.selectedCell;
-
-  if (state.direction === 'across') {
-    col--;
-    while (col >= 0 && state.grid[row][col].isBlack) col--;
-    if (col < 0) return;
-  } else {
-    row--;
-    while (row >= 0 && state.grid[row][col].isBlack) row--;
-    if (row < 0) return;
-  }
-
-  state.selectedCell = { row, col };
-  highlightWord();
-  updateActiveClue();
+  let {row,col}=state.selectedCell;
+  if (state.direction==='across') { col--; while(col>=0&&state.grid[row][col].isBlack) col--; if(col<0) return; }
+  else { row--; while(row>=0&&state.grid[row][col].isBlack) row--; if(row<0) return; }
+  state.selectedCell={row,col}; highlightWord(); updateActiveClue();
 }
 
-function moveSelection(dx, dy) {
+function moveSelection(dx,dy) {
   if (!state.selectedCell) return;
-  let { row, col } = state.selectedCell;
-  const rows = state.grid.length;
-  const cols = state.grid[0].length;
-
-  // dx maps to col, dy maps to row
-  let nr = row + dy;
-  let nc = col + dx;
-
-  // Skip black cells
-  while (nr >= 0 && nr < rows && nc >= 0 && nc < cols && state.grid[nr][nc].isBlack) {
-    nr += dy; nc += dx;
-  }
-
-  if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !state.grid[nr][nc].isBlack) {
-    state.selectedCell = { row: nr, col: nc };
-    // Set direction based on arrow key
-    if (dx !== 0) state.direction = 'across';
-    if (dy !== 0) state.direction = 'down';
-    document.getElementById('btnAcross').classList.toggle('active', state.direction === 'across');
-    document.getElementById('btnDown').classList.toggle('active', state.direction === 'down');
-    highlightWord();
-    updateActiveClue();
-    focusHiddenInput();
+  let {row,col}=state.selectedCell;
+  const R=state.grid.length, C=state.grid[0].length;
+  let nr=row+dy, nc=col+dx;
+  while(nr>=0&&nr<R&&nc>=0&&nc<C&&state.grid[nr][nc].isBlack){nr+=dy;nc+=dx;}
+  if(nr>=0&&nr<R&&nc>=0&&nc<C&&!state.grid[nr][nc].isBlack){
+    state.selectedCell={row:nr,col:nc};
+    if(dx!==0) state.direction='across';
+    if(dy!==0) state.direction='down';
+    document.getElementById('btnAcross').classList.toggle('active',state.direction==='across');
+    document.getElementById('btnDown').classList.toggle('active',state.direction==='down');
+    highlightWord(); updateActiveClue();
   }
 }
 
-/* ═══════════ FIREBASE LISTENERS ═══════════ */
-
+/* ═══ FIREBASE LISTENERS ═══ */
 function listenRoom() {
   if (!state.roomRef) return;
-
-  // Listen for cell changes
-  const cellListener = state.roomRef.child('cells').on('value', snap => {
-    const cells = snap.val();
-    if (!cells) return;
-    updateGridFromFirebase(cells);
+  state.roomRef.child('cells').on('value', snap => {
+    const cells=snap.val(); if(!cells) return;
+    for (const k of Object.keys(cells)) {
+      const [r,c]=k.split('_').map(Number);
+      if (!state.grid[r]?.[c]) continue;
+      if (state.mode==='collaborative') { state.grid[r][c].filled.shared=cells[k].letter||''; }
+      else { const d=cells[k]; if(d.p1!==undefined) state.grid[r][c].filled.p1=d.p1; if(d.p2!==undefined) state.grid[r][c].filled.p2=d.p2; }
+      updateCellDisplay(r,c);
+    }
     checkCompletion();
   });
-
-  // Listen for peer cursor
-  const peerId = state.playerId === 'p1' ? 'p2' : 'p1';
-  const cursorListener = state.roomRef.child(`cursors/${peerId}`).on('value', snap => {
-    const cursor = snap.val();
-    // Clear old peer cursors
-    document.querySelectorAll('.peer-cursor').forEach(el => el.classList.remove('peer-cursor'));
-    if (cursor) {
-      const el = getCellElement(cursor.row, cursor.col);
-      if (el) el.classList.add('peer-cursor');
-    }
+  const peer = state.playerId==='p1'?'p2':'p1';
+  state.roomRef.child(`cursors/${peer}`).on('value', snap => {
+    document.querySelectorAll('.peer-cursor').forEach(e=>e.classList.remove('peer-cursor'));
+    const cur=snap.val(); if(cur){const el=getCellEl(cur.row,cur.col);if(el) el.classList.add('peer-cursor');}
   });
-
-  // Listen for scores
-  const scoreListener = state.roomRef.child('scores').on('value', snap => {
-    const scores = snap.val();
-    if (scores) {
-      state.scores = scores;
-      updateHUD();
-    }
-  });
+  state.roomRef.child('scores').on('value', snap => { const s=snap.val(); if(s) state.scores=s; });
 }
 
-function updateGridFromFirebase(cells) {
-  for (const key of Object.keys(cells)) {
-    const [r, c] = key.split('_').map(Number);
-    if (!state.grid[r] || !state.grid[r][c]) continue;
-
-    if (state.mode === 'collaborative') {
-      const data = cells[key];
-      state.grid[r][c].filled.shared = data.letter || '';
-    } else {
-      // Competitive
-      const data = cells[key];
-      if (data.p1 !== undefined) state.grid[r][c].filled.p1 = data.p1;
-      if (data.p2 !== undefined) state.grid[r][c].filled.p2 = data.p2;
-    }
-    updateCellDisplay(r, c);
-  }
-}
-
-/* ═══════════ COMPLETION CHECK ═══════════ */
-
+/* ═══ COMPLETION ═══ */
 function checkCompletion() {
   if (state.gameComplete) return;
-
-  let completedWords = 0;
-  let totalWords = 0;
-
-  for (const dir of ['across', 'down']) {
+  let done=0, total=0;
+  for (const dir of ['across','down']) {
     for (const clue of state.clues[dir]) {
-      totalWords++;
-      let word = '';
-      for (let i = 0; i < clue.answer.length; i++) {
-        const r = clue.dir === 'across' ? clue.row : clue.row + i;
-        const c = clue.dir === 'across' ? clue.col + i : clue.col;
-
-        if (state.mode === 'competitive') {
-          word += (state.grid[r][c].filled[state.playerId] || '');
-        } else {
-          word += (state.grid[r][c].filled.shared || '');
-        }
+      total++;
+      let word='';
+      for (let i=0;i<clue.answer.length;i++) {
+        const r=clue.dir==='across'?clue.row:clue.row+i;
+        const c=clue.dir==='across'?clue.col+i:clue.col;
+        word += state.mode==='competitive'?(state.grid[r][c].filled[state.playerId]||''):(state.grid[r][c].filled.shared||'');
       }
-
-      if (word.toUpperCase() === clue.answer.toUpperCase()) {
-        completedWords++;
-        // Mark clue as completed in UI
-        const clueEl = document.getElementById(`clue_${clue.dir}_${clue.number}`);
-        if (clueEl) clueEl.classList.add('completed');
-      } else {
-        const clueEl = document.getElementById(`clue_${clue.dir}_${clue.number}`);
-        if (clueEl) clueEl.classList.remove('completed');
-      }
+      const el=document.getElementById(`clue_${clue.dir}_${clue.number}`);
+      if (word.toUpperCase()===clue.answer.toUpperCase()) { done++; if(el) el.classList.add('completed'); }
+      else { if(el) el.classList.remove('completed'); }
     }
   }
-
-  // Update score display
-  document.getElementById('hudScore').textContent = completedWords;
-
-  if (completedWords === totalWords) {
-    state.gameComplete = true;
-    clearInterval(state.timerInterval);
-    showWinScreen();
-  }
+  document.getElementById('hudScore').textContent = `${done}/${total}`;
+  if (done===total) { state.gameComplete=true; clearInterval(state.timerInterval); showWinScreen(); }
 }
 
-/* ═══════════ WIN SCREEN ═══════════ */
-
+/* ═══ WIN ═══ */
 function showWinScreen() {
-  const elapsed = Math.floor((Date.now() - state.timerStart) / 1000);
-  const mins = Math.floor(elapsed / 60);
-  const secs = elapsed % 60;
-  const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
-
-  const totalWords = state.clues.across.length + state.clues.down.length;
-
-  if (state.mode === 'solo') {
-    document.getElementById('winTitle').textContent = `Nice work, ${state.playerName}!`;
-    document.getElementById('winSubtitle').textContent = state.puzzle.title || 'Puzzle Complete';
-    document.getElementById('winStats').innerHTML = `
-      <div class="win-stat"><div class="win-stat-val">${timeStr}</div><div class="win-stat-label">Time</div></div>
-      <div class="win-stat"><div class="win-stat-val">${totalWords}</div><div class="win-stat-label">Words</div></div>
-    `;
-    document.getElementById('winScores').style.display = 'none';
-  } else if (state.mode === 'collaborative') {
-    document.getElementById('winTitle').textContent = 'You solved it together! 🤝🏾';
-    document.getElementById('winSubtitle').textContent = `${timeStr}`;
-    document.getElementById('winStats').innerHTML = `
-      <div class="win-stat"><div class="win-stat-val">${timeStr}</div><div class="win-stat-label">Time</div></div>
-      <div class="win-stat"><div class="win-stat-val">${totalWords}</div><div class="win-stat-label">Words</div></div>
-    `;
+  const elapsed=Math.floor((Date.now()-state.timerStart)/1000);
+  const ts=`${Math.floor(elapsed/60)}:${(elapsed%60).toString().padStart(2,'0')}`;
+  const tw = state.clues.across.length+state.clues.down.length;
+  if (state.mode==='solo') {
+    document.getElementById('winTitle').textContent=`Nice work, ${state.playerName}!`;
+    document.getElementById('winSubtitle').textContent=state.puzzle.title||'';
+    document.getElementById('winStats').innerHTML=`<div style="text-align:center"><div class="win-stat-val">${ts}</div><div class="win-stat-label">Time</div></div><div style="text-align:center"><div class="win-stat-val">${tw}</div><div class="win-stat-label">Words</div></div>`;
+    document.getElementById('winScores').style.display='none';
+  } else if (state.mode==='collaborative') {
+    document.getElementById('winTitle').textContent='You solved it together! 🤝🏾';
+    document.getElementById('winSubtitle').textContent=state.puzzle.title||'';
+    document.getElementById('winStats').innerHTML=`<div style="text-align:center"><div class="win-stat-val">${ts}</div><div class="win-stat-label">Time</div></div><div style="text-align:center"><div class="win-stat-val">${tw}</div><div class="win-stat-label">Words</div></div>`;
   } else {
-    // Competitive
-    const p1Score = state.scores.p1 || 0;
-    const p2Score = state.scores.p2 || 0;
-    const winner = p1Score > p2Score ? 'Player 1' : p2Score > p1Score ? 'Player 2' : 'Tie';
-    document.getElementById('winTitle').textContent = winner === 'Tie' ? "It's a tie!" : `${winner} wins!`;
-    document.getElementById('winSubtitle').textContent = timeStr;
-    document.getElementById('winScores').style.display = 'flex';
-    document.getElementById('winScores').innerHTML = `
-      <div class="win-player ${p1Score >= p2Score ? 'winner' : ''}">
-        <div class="win-player-name">P1</div>
-        <div class="win-player-score">${p1Score}</div>
-      </div>
-      <div class="win-player ${p2Score >= p1Score ? 'winner' : ''}">
-        <div class="win-player-name">P2</div>
-        <div class="win-player-score">${p2Score}</div>
-      </div>
-    `;
+    const p1=state.scores.p1||0, p2=state.scores.p2||0;
+    const w=p1>p2?'Player 1':p2>p1?'Player 2':'Tie';
+    document.getElementById('winTitle').textContent=w==='Tie'?"It's a tie!":`${w} wins!`;
+    document.getElementById('winSubtitle').textContent=ts;
+    document.getElementById('winScores').style.display='flex';
+    document.getElementById('winScores').innerHTML=`<div style="text-align:center"><div class="win-stat-val">${p1}</div><div class="win-stat-label">P1</div></div><div style="text-align:center"><div class="win-stat-val">${p2}</div><div class="win-stat-label">P2</div></div>`;
   }
-
   showScreen('screenWin');
 }
 
-/* ═══════════ TIMER / HUD ═══════════ */
-
+/* ═══ TIMER ═══ */
 function updateTimer() {
   if (!state.timerStart) return;
-  const elapsed = Math.floor((Date.now() - state.timerStart) / 1000);
-  const mins = Math.floor(elapsed / 60);
-  const secs = elapsed % 60;
-  document.getElementById('hudTimer').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+  const e=Math.floor((Date.now()-state.timerStart)/1000);
+  document.getElementById('hudTimer').textContent=`${Math.floor(e/60)}:${(e%60).toString().padStart(2,'0')}`;
 }
 
-function updateHUD() {
-  if (state.mode === 'competitive') {
-    document.getElementById('hudScoreBadge').innerHTML = `⚔️ <span class="val">${state.scores[state.playerId] || 0}</span>`;
-  }
-}
-
-/* ═══════════ NAVIGATION ═══════════ */
-
+/* ═══ NAV ═══ */
 function leaveRoom() {
   clearInterval(state.timerInterval);
-
-  // Clean up Firebase listeners
-  if (state.roomRef) {
-    state.roomRef.off();
-    state.roomRef = null;
-  }
-
-  // Close clue drawer
+  if (state.roomRef){state.roomRef.off();state.roomRef=null;}
   document.getElementById('clueDrawer').classList.remove('open');
-
-  state.selectedCell = null;
-  state.gameComplete = false;
-  state.puzzle = null;
-
+  state.selectedCell=null; state.gameComplete=false; state.puzzle=null;
   showScreen('screenLobby');
 }
+function backToLobby() { leaveRoom(); }
 
-function backToLobby() {
-  leaveRoom();
-}
-
-/* ═══════════ INIT ═══════════ */
-
-// Check for room code in URL
-(function() {
-  const params = new URLSearchParams(window.location.search);
-  const room = params.get('room');
+/* ═══ INIT ═══ */
+(function(){
+  const p=new URLSearchParams(location.search);
+  const room=p.get('room');
   if (room) {
-    document.getElementById('inputRoom').value = room.toUpperCase();
-    // Auto-switch to multiplayer mode
-    setMode('collaborative');
-    document.querySelectorAll('.mode-btn')[1].classList.add('selected');
-    document.querySelectorAll('.mode-btn')[0].classList.remove('selected');
+    document.getElementById('inputRoom').value=room.toUpperCase();
+    setMode('collaborative', document.querySelectorAll('.mode-btn')[1]);
   }
 })();
 
-// Prevent iOS zoom on double-tap
-document.addEventListener('touchstart', (e) => {
-  if (e.target.closest('.grid-cell')) {
-    e.preventDefault();
-  }
-}, { passive: false });
-
-// Keep hidden input focused during game
-document.addEventListener('click', (e) => {
-  if (document.getElementById('screenGame').classList.contains('active')) {
-    if (!e.target.closest('.clue-drawer') && !e.target.closest('.game-header') && !e.target.closest('.keyboard-bar')) {
-      setTimeout(() => focusHiddenInput(), 10);
-    }
-  }
-});
+document.addEventListener('touchstart', e => {
+  if (e.target.closest('.grid-cell')||e.target.closest('.osk')) e.preventDefault();
+}, {passive:false});
 </script>
 </body>
 </html>
