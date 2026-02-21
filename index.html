@@ -154,7 +154,7 @@ body::before {
   display: flex; align-items: center; gap: 8px;
   padding: 6px 12px; background: var(--paper-warm);
   border-bottom: 1px solid var(--paper-dim);
-  min-height: 36px; flex-shrink: 0;
+  min-height: 36px; flex-shrink: 0; cursor: pointer;
 }
 .clue-bar-num { font-family: 'DM Mono', monospace; font-size: 0.7rem; font-weight: 500; color: var(--gold-dim); white-space: nowrap; }
 .clue-bar-text { font-size: 0.8rem; color: var(--ink-soft); flex: 1; }
@@ -223,9 +223,10 @@ body::before {
 }
 .dir-btn.active { background: var(--gold-light); color: var(--gold-dim); font-weight: 700; }
 .dir-btn-clue {
-  padding: 6px 10px; border: none; background: var(--paper-warm);
-  color: var(--ink-faint); cursor: pointer; font-size: 0.85rem;
+  padding: 6px 14px; border: none; background: var(--paper-warm);
+  color: var(--ink-faint); cursor: pointer; font-size: 1.1rem;
   border-left: 1px solid var(--paper-dim);
+  font-weight: 700;
 }
 
 /* Clue drawer */
@@ -299,10 +300,13 @@ body::before {
       </div>
     </div>
     <div class="lobby-section" id="roomArea">
-      <div class="lobby-label">Room Code</div>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="inputRoom" class="lobby-input" placeholder="ABCDE" maxlength="5" style="text-transform:uppercase;font-family:'DM Mono',monospace;letter-spacing:3px;text-align:center">
-        <button class="btn-outline-sm" onclick="joinRoom()">Join</button>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button class="btn-primary btn-gold" style="flex:1;margin:0" id="btnCreate" onclick="createRoom()">Create Room</button>
+      </div>
+      <div class="lobby-label">— Or Join a Room —</div>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <input type="text" id="inputRoom" class="lobby-input" placeholder="Enter code" maxlength="5" style="text-transform:uppercase;font-family:'DM Mono',monospace;letter-spacing:3px;text-align:center;flex:1">
+        <button class="btn-primary btn-sage" style="width:auto;margin:0;padding:12px 20px" onclick="joinRoom()">Join</button>
       </div>
     </div>
     <button class="btn-primary btn-gold" id="btnPlay" onclick="startGame()">Begin Puzzle</button>
@@ -382,9 +386,10 @@ body::before {
       <div class="hud-timer font-mono" id="hudTimer">0:00</div>
     </div>
   </div>
-  <div class="clue-bar">
+  <div class="clue-bar" onclick="toggleClueDrawer()">
     <span class="clue-bar-num" id="activeClueNum">—</span>
     <span class="clue-bar-text" id="activeClueText">Tap a cell to begin</span>
+    <span style="font-size:1rem;color:var(--ink-faint);padding:0 4px;flex-shrink:0">☰</span>
   </div>
   <div class="grid-wrapper" id="gridWrapper">
     <div class="crossword-grid" id="crosswordGrid"></div>
@@ -579,8 +584,13 @@ function setMode(mode, el) {
   if (el) el.classList.add('selected');
   const roomArea = document.getElementById('roomArea');
   const btnPlay = document.getElementById('btnPlay');
-  if (mode === 'solo') { roomArea.style.display='none'; btnPlay.textContent='Begin Puzzle'; btnPlay.onclick=startGame; }
-  else { roomArea.style.display=''; btnPlay.textContent='Create Room'; btnPlay.onclick=createRoom; }
+  if (mode === 'solo') {
+    roomArea.style.display='none';
+    btnPlay.style.display='';
+  } else {
+    roomArea.style.display='';
+    btnPlay.style.display='none';
+  }
 }
 function setPuzzleType(type, el) {
   state.puzzleType = type;
@@ -828,19 +838,6 @@ function updateActiveClue() {
 function getCellEl(r,c) { return document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`); }
 
 /* ═══ KEYBOARD ═══ */
-document.getElementById('osk').addEventListener('click', e => {
-  const btn=e.target.closest('.osk-key'); if(!btn) return; e.preventDefault();
-  const key=btn.dataset.key;
-  if (key==='BACKSPACE') { handleBackspace(); return; }
-  if (key==='TOGGLE') {
-    state.direction=state.direction==='across'?'down':'across';
-    document.getElementById('btnAcross').classList.toggle('active',state.direction==='across');
-    document.getElementById('btnDown').classList.toggle('active',state.direction==='down');
-    if (state.selectedCell) { highlightWord(); updateActiveClue(); }
-    return;
-  }
-  if (/^[A-Z]$/.test(key)) typeLetter(key);
-});
 
 document.addEventListener('keydown', e => {
   if (!state.selectedCell) return;
@@ -1027,12 +1024,33 @@ function backToLobby() { leaveRoom(); }
   if (room) {
     document.getElementById('inputRoom').value=room.toUpperCase();
     setMode('collaborative', document.querySelectorAll('.mode-btn')[1]);
+    // Auto-focus the join input so it's obvious
+    setTimeout(()=>document.getElementById('inputRoom').focus(), 300);
   }
 })();
 
 document.addEventListener('touchstart', e => {
-  if (e.target.closest('.grid-cell')||e.target.closest('.osk')) e.preventDefault();
+  if (e.target.closest('.grid-cell')) e.preventDefault();
 }, {passive:false});
+
+// OSK: use touchend + click for maximum compatibility
+function handleOSKPress(e) {
+  const btn = e.target.closest('.osk-key');
+  if (!btn) return;
+  e.preventDefault();
+  const key = btn.dataset.key;
+  if (key==='BACKSPACE') { handleBackspace(); return; }
+  if (key==='TOGGLE') {
+    state.direction=state.direction==='across'?'down':'across';
+    document.getElementById('btnAcross').classList.toggle('active',state.direction==='across');
+    document.getElementById('btnDown').classList.toggle('active',state.direction==='down');
+    if (state.selectedCell) { highlightWord(); updateActiveClue(); }
+    return;
+  }
+  if (/^[A-Z]$/.test(key)) typeLetter(key);
+}
+document.getElementById('osk').addEventListener('touchend', handleOSKPress);
+document.getElementById('osk').addEventListener('click', handleOSKPress);
 </script>
 </body>
 </html>
