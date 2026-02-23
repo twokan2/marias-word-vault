@@ -231,18 +231,18 @@ body::before {
 
 /* Clue drawer */
 .clue-drawer {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: var(--paper); border-top: 2px solid var(--ink);
-  transform: translateY(100%); transition: transform 0.3s;
-  max-height: 55vh; overflow-y: auto; padding: 16px;
-  z-index: 100;
+  background: var(--paper-warm); border-top: 1px solid var(--paper-dim);
+  max-height: 180px; overflow-y: auto; padding: 8px 12px;
+  -webkit-overflow-scrolling: touch;
+  flex-shrink: 0;
 }
-.clue-drawer.open { transform: translateY(0); }
-.clue-drawer-handle { width: 40px; height: 3px; background: var(--paper-dim); border-radius: 3px; margin: 0 auto 12px; cursor: pointer; }
-.clue-section { margin-bottom: 16px; }
+.clue-drawer.open { }
+.clue-drawer-handle { display: none; }
+.clue-section { margin-bottom: 12px; }
 .clue-section-title { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid var(--paper-dim); }
 .clue-item { display: flex; gap: 6px; padding: 4px 0; cursor: pointer; align-items: baseline; }
 .clue-item:hover { background: var(--paper-warm); }
+.clue-item.active { background: var(--blue-select); border-radius: 4px; padding: 4px 4px; }
 .clue-item-num { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--gold-dim); min-width: 20px; }
 .clue-item-text { font-size: 0.8rem; color: var(--ink-soft); }
 .clue-item.completed .clue-item-text { text-decoration: line-through; color: var(--ink-faint); }
@@ -386,7 +386,7 @@ body::before {
       <div class="hud-timer font-mono" id="hudTimer">0:00</div>
     </div>
   </div>
-  <div class="clue-bar" onclick="toggleClueDrawer()">
+  <div class="clue-bar" onclick="scrollToActiveClue()">
     <span class="clue-bar-num" id="activeClueNum">—</span>
     <span class="clue-bar-text" id="activeClueText">Tap a cell to begin</span>
     <span style="font-size:1rem;color:var(--ink-faint);padding:0 4px;flex-shrink:0">☰</span>
@@ -397,7 +397,10 @@ body::before {
   <div class="dir-bar">
     <button class="dir-btn active" id="btnAcross" onclick="setDirection('across')">Across →</button>
     <button class="dir-btn" id="btnDown" onclick="setDirection('down')">Down ↓</button>
-    <button class="dir-btn-clue" onclick="toggleClueDrawer()" title="Show clues">☰</button>
+  </div>
+  <div class="clue-drawer" id="clueDrawer">
+    <div class="clue-section"><div class="clue-section-title">Across</div><div id="clueListAcross"></div></div>
+    <div class="clue-section"><div class="clue-section-title">Down</div><div id="clueListDown"></div></div>
   </div>
   <div class="osk" id="osk">
     <div class="osk-row">
@@ -409,11 +412,6 @@ body::before {
     <div class="osk-row">
       <button class="osk-key wide accent" data-key="TOGGLE">⇄ DIR</button><button class="osk-key" data-key="Z">Z</button><button class="osk-key" data-key="X">X</button><button class="osk-key" data-key="C">C</button><button class="osk-key" data-key="V">V</button><button class="osk-key" data-key="B">B</button><button class="osk-key" data-key="N">N</button><button class="osk-key" data-key="M">M</button><button class="osk-key wide" data-key="BACKSPACE">⌫</button>
     </div>
-  </div>
-  <div class="clue-drawer" id="clueDrawer">
-    <div class="clue-drawer-handle" onclick="toggleClueDrawer()"></div>
-    <div class="clue-section"><div class="clue-section-title">Across</div><div id="clueListAcross"></div></div>
-    <div class="clue-section"><div class="clue-section-title">Down</div><div id="clueListDown"></div></div>
   </div>
 </div>
 
@@ -457,96 +455,9 @@ const state = {
   customPuzzles:[], gameComplete:false,
 };
 
-/* ═══ EMBEDDED FALLBACK PUZZLES ═══ */
-const EMBEDDED_PUZZLES = [
-  {"title":"Spark","size":5,"gridData":[["B","L","A","R","E"],["A","#","U","#","R"],["L","I","N","E","R"],["E","#","T","#","E"],["D","O","S","E","D"]],"clues":{"across":[{"number":1,"clue":"Trumpet sound","answer":"BLARE","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Ocean vessel","answer":"LINER","row":2,"col":0,"dir":"across"},{"number":7,"clue":"Gave out medicine","answer":"DOSED","row":4,"col":0,"dir":"across"}],"down":[{"number":1,"clue":"Made into bundles","answer":"BALED","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Parents' sisters","answer":"AUNTS","row":0,"col":2,"dir":"down"},{"number":3,"clue":"Made a mistake","answer":"ERRED","row":0,"col":4,"dir":"down"}]},"answers":{"across_1":"BLARE","across_4":"LINER","across_7":"DOSED","down_1":"BALED","down_2":"AUNTS","down_3":"ERRED"}},
-  {"title":"Harbor","size":5,"gridData":[["C","R","A","N","E"],["H","#","E","#","V"],["A","D","O","R","E"],["R","#","N","#","N"],["T","E","S","T","S"]],"clues":{"across":[{"number":1,"clue":"Construction machine or bird","answer":"CRANE","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Worship","answer":"ADORE","row":2,"col":0,"dir":"across"},{"number":7,"clue":"Final exams","answer":"TESTS","row":4,"col":0,"dir":"across"}],"down":[{"number":1,"clue":"Navigation map","answer":"CHART","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Very long time periods","answer":"AEONS","row":0,"col":2,"dir":"down"},{"number":3,"clue":"Makes the score equal","answer":"EVENS","row":0,"col":4,"dir":"down"}]},"answers":{"across_1":"CRANE","across_4":"ADORE","across_7":"TESTS","down_1":"CHART","down_2":"AEONS","down_3":"EVENS"}},
-  {"title":"Autumn","size":5,"gridData":[["M","A","P","L","E"],["I","#","E","#","A"],["L","I","N","E","R"],["E","#","N","#","E"],["S","T","E","E","D"]],"clues":{"across":[{"number":1,"clue":"Syrup tree","answer":"MAPLE","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Ship or jacket inner layer","answer":"LINER","row":2,"col":0,"dir":"across"},{"number":7,"clue":"Noble horse","answer":"STEED","row":4,"col":0,"dir":"across"}],"down":[{"number":1,"clue":"Distance units","answer":"MILES","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Tube-shaped pasta","answer":"PENNE","row":0,"col":2,"dir":"down"},{"number":3,"clue":"Like a rabbit, feature-wise","answer":"EARED","row":0,"col":4,"dir":"down"}]},"answers":{"across_1":"MAPLE","across_4":"LINER","across_7":"STEED","down_1":"MILES","down_2":"PENNE","down_3":"EARED"}},
-  {"title":"Focus","size":5,"gridData":[["S","C","O","P","E"],["E","#","W","#","A"],["T","O","N","E","R"],["U","#","E","#","N"],["P","E","R","K","S"]],"clues":{"across":[{"number":1,"clue":"Range of view","answer":"SCOPE","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Printer cartridge","answer":"TONER","row":2,"col":0,"dir":"across"},{"number":7,"clue":"Job benefits","answer":"PERKS","row":4,"col":0,"dir":"across"}],"down":[{"number":1,"clue":"Arrangement","answer":"SETUP","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Property holder","answer":"OWNER","row":0,"col":2,"dir":"down"},{"number":3,"clue":"Makes money","answer":"EARNS","row":0,"col":4,"dir":"down"}]},"answers":{"across_1":"SCOPE","across_4":"TONER","across_7":"PERKS","down_1":"SETUP","down_2":"OWNER","down_3":"EARNS"}},
-  {"title":"Breeze","size":5,"gridData":[["G","R","A","I","N"],["R","#","L","#","E"],["O","Z","O","N","E"],["A","#","E","#","D"],["N","E","S","T","S"]],"clues":{"across":[{"number":1,"clue":"Wheat or rice, e.g.","answer":"GRAIN","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Earth's protective layer","answer":"OZONE","row":2,"col":0,"dir":"across"},{"number":7,"clue":"Bird homes","answer":"NESTS","row":4,"col":0,"dir":"across"}],"down":[{"number":1,"clue":"Sound of pain","answer":"GROAN","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Soothing plants","answer":"ALOES","row":0,"col":2,"dir":"down"},{"number":3,"clue":"Requirements","answer":"NEEDS","row":0,"col":4,"dir":"down"}]},"answers":{"across_1":"GRAIN","across_4":"OZONE","across_7":"NESTS","down_1":"GROAN","down_2":"ALOES","down_3":"NEEDS"}},
-  {"title":"Ember","size":5,"gridData":[["T","R","A","D","E"],["O","#","B","#","L"],["O","L","I","V","E"],["L","#","D","#","C"],["S","P","E","N","T"]],"clues":{"across":[{"number":1,"clue":"Swap or exchange","answer":"TRADE","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Martini garnish","answer":"OLIVE","row":2,"col":0,"dir":"across"},{"number":7,"clue":"Used up","answer":"SPENT","row":4,"col":0,"dir":"across"}],"down":[{"number":1,"clue":"Hammer and wrench, e.g.","answer":"TOOLS","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Put up with","answer":"ABIDE","row":0,"col":2,"dir":"down"},{"number":3,"clue":"Choose by voting","answer":"ELECT","row":0,"col":4,"dir":"down"}]},"answers":{"across_1":"TRADE","across_4":"OLIVE","across_7":"SPENT","down_1":"TOOLS","down_2":"ABIDE","down_3":"ELECT"}}
-];
-
-/* ═══ API PUZZLE GENERATOR ═══ */
-async function fetchWords(pattern) {
-  const url = `https://api.datamuse.com/words?sp=${encodeURIComponent(pattern)}&md=d&max=30`;
-  const res = await fetch(url);
-  const data = await res.json();
-  return data.filter(w => w.word.length === pattern.length && /^[a-z]+$/.test(w.word) && w.defs && w.defs.length > 0)
-    .map(w => ({ word: w.word.toUpperCase(), clue: cleanDef(w.defs[0]) }));
-}
-
-function cleanDef(d) {
-  const p = d.split('\t');
-  let t = p.length > 1 ? p[1] : p[0];
-  t = t.charAt(0).toUpperCase() + t.slice(1);
-  return t.length > 60 ? t.substring(0, 57) + '...' : t;
-}
-
-function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
-
-async function generateAPIPuzzle() {
-  const statusEl = document.getElementById('puzzleStatus');
-  statusEl.innerHTML = '<span class="loading-spinner"></span>Generating fresh puzzle...';
-  try {
-    const seeds = 'abcdefghijklmnoprstw';
-    const letter = seeds[Math.floor(Math.random() * seeds.length)];
-    const pool = await fetchWords(letter + '????');
-    if (pool.length < 3) throw new Error('Insufficient words');
-    // shuffle
-    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
-
-    for (let attempt = 0; attempt < 30; attempt++) {
-      const r0c = pool[attempt % pool.length];
-      const r0 = r0c.word;
-      const [c0p, c2p, c4p] = await Promise.all([
-        fetchWords(r0[0].toLowerCase()+'????'),
-        fetchWords(r0[2].toLowerCase()+'????'),
-        fetchWords(r0[4].toLowerCase()+'????')
-      ]);
-      if (!c0p.length || !c2p.length || !c4p.length) continue;
-      const c0c = pick(c0p), c2c = pick(c2p), c4c = pick(c4p);
-      const c0=c0c.word, c2=c2c.word, c4=c4c.word;
-
-      const r2pat = c0[2].toLowerCase()+'?'+c2[2].toLowerCase()+'?'+c4[2].toLowerCase();
-      const r2p = await fetchWords(r2pat);
-      if (!r2p.length) continue;
-      const r2c = pick(r2p), r2 = r2c.word;
-
-      const r4pat = c0[4].toLowerCase()+'?'+c2[4].toLowerCase()+'?'+c4[4].toLowerCase();
-      const r4p = await fetchWords(r4pat);
-      if (!r4p.length) continue;
-      const r4c = pick(r4p), r4 = r4c.word;
-
-      if (new Set([r0,r2,r4,c0,c2,c4]).size !== 6) continue;
-
-      const S = s => s.split('');
-      statusEl.textContent = '';
-      return {
-        source:'api', title:'Fresh Puzzle', size:5,
-        gridData: [S(r0), [c0[1],'#',c2[1],'#',c4[1]], S(r2), [c0[3],'#',c2[3],'#',c4[3]], S(r4)],
-        clues: {
-          across: [
-            {number:1,clue:r0c.clue,answer:r0,row:0,col:0,dir:'across'},
-            {number:4,clue:r2c.clue,answer:r2,row:2,col:0,dir:'across'},
-            {number:7,clue:r4c.clue,answer:r4,row:4,col:0,dir:'across'}
-          ],
-          down: [
-            {number:1,clue:c0c.clue,answer:c0,row:0,col:0,dir:'down'},
-            {number:2,clue:c2c.clue,answer:c2,row:0,col:2,dir:'down'},
-            {number:3,clue:c4c.clue,answer:c4,row:0,col:4,dir:'down'}
-          ]
-        },
-        answers:{across_1:r0,across_4:r2,across_7:r4,down_1:c0,down_2:c2,down_3:c4}
-      };
-    }
-    throw new Error('No valid combo found');
-  } catch(e) {
-    console.log('API fallback:', e.message);
-    statusEl.textContent = '';
-    return getEmbeddedPuzzle();
-  }
-}
+/* ═══ EMBEDDED PUZZLES (7×7, CSP-verified) ═══ */
+const EMBEDDED_PUZZLES = [{"title":"Daybreak","size":7,"gridData":[["S","A","C","#","F","A","T"],["A","G","O","#","E","R","A"],["D","E","T","R","A","C","T"],["#","#","T","O","T","#","#"],["S","T","A","T","U","T","E"],["P","I","G","#","R","O","W"],["A","P","E","#","E","Y","E"]],"clues":{"across":[{"number":1,"clue":"Pouch or bag","answer":"SAC","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Body type, not thin","answer":"FAT","row":0,"col":4,"dir":"across"},{"number":7,"clue":"In the past","answer":"AGO","row":1,"col":0,"dir":"across"},{"number":8,"clue":"Historical period","answer":"ERA","row":1,"col":4,"dir":"across"},{"number":9,"clue":"Take away from","answer":"DETRACT","row":2,"col":0,"dir":"across"},{"number":11,"clue":"Little one","answer":"TOT","row":3,"col":2,"dir":"across"},{"number":12,"clue":"A written law","answer":"STATUTE","row":4,"col":0,"dir":"across"},{"number":16,"clue":"Barnyard animal","answer":"PIG","row":5,"col":0,"dir":"across"},{"number":17,"clue":"A fight or argument","answer":"ROW","row":5,"col":4,"dir":"across"},{"number":18,"clue":"Copycat primate","answer":"APE","row":6,"col":0,"dir":"across"},{"number":19,"clue":"Organ of sight","answer":"EYE","row":6,"col":4,"dir":"across"}],"down":[{"number":1,"clue":"Unhappy","answer":"SAD","row":0,"col":0,"dir":"down"},{"number":2,"clue":"How old you are","answer":"AGE","row":0,"col":1,"dir":"down"},{"number":3,"clue":"Cozy little house","answer":"COTTAGE","row":0,"col":2,"dir":"down"},{"number":4,"clue":"Main attraction","answer":"FEATURE","row":0,"col":4,"dir":"down"},{"number":5,"clue":"Curved line","answer":"ARC","row":0,"col":5,"dir":"down"},{"number":6,"clue":"Cheap lace pattern","answer":"TAT","row":0,"col":6,"dir":"down"},{"number":10,"clue":"Decay or spoil","answer":"ROT","row":2,"col":4,"dir":"down"},{"number":12,"clue":"Relaxation retreat","answer":"SPA","row":4,"col":0,"dir":"down"},{"number":13,"clue":"Helpful hint","answer":"TIP","row":4,"col":2,"dir":"down"},{"number":14,"clue":"Plaything for a child","answer":"TOY","row":4,"col":4,"dir":"down"},{"number":15,"clue":"Female sheep","answer":"EWE","row":4,"col":5,"dir":"down"}]},"answers":{"across_1":"SAC","across_4":"FAT","across_7":"AGO","across_8":"ERA","across_9":"DETRACT","across_11":"TOT","across_12":"STATUTE","across_16":"PIG","across_17":"ROW","across_18":"APE","across_19":"EYE","down_1":"SAD","down_2":"AGE","down_3":"COTTAGE","down_4":"FEATURE","down_5":"ARC","down_6":"TAT","down_10":"ROT","down_12":"SPA","down_13":"TIP","down_14":"TOY","down_15":"EWE"}},{"title":"Sunrise","size":7,"gridData":[["S","O","P","#","G","O","D"],["A","I","R","#","R","A","Y"],["C","L","I","M","A","T","E"],["#","#","V","A","N","#","#"],["L","E","A","D","I","N","G"],["A","R","C","#","T","I","E"],["P","A","Y","#","E","L","M"]],"clues":{"across":[{"number":1,"clue":"Something soaked up","answer":"SOP","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Supreme being","answer":"GOD","row":0,"col":4,"dir":"across"},{"number":7,"clue":"Fresh oxygen","answer":"AIR","row":1,"col":0,"dir":"across"},{"number":8,"clue":"Beam of light","answer":"RAY","row":1,"col":4,"dir":"across"},{"number":9,"clue":"Weather patterns over time","answer":"CLIMATE","row":2,"col":0,"dir":"across"},{"number":11,"clue":"Moving truck","answer":"VAN","row":3,"col":2,"dir":"across"},{"number":12,"clue":"Ahead of the pack","answer":"LEADING","row":4,"col":0,"dir":"across"},{"number":16,"clue":"Rainbow shape","answer":"ARC","row":5,"col":0,"dir":"across"},{"number":17,"clue":"Knot a necktie","answer":"TIE","row":5,"col":4,"dir":"across"},{"number":18,"clue":"Earn wages","answer":"PAY","row":6,"col":0,"dir":"across"},{"number":19,"clue":"Shady tree","answer":"ELM","row":6,"col":4,"dir":"across"}],"down":[{"number":1,"clue":"Small bag","answer":"SAC","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Engine lubricant","answer":"OIL","row":0,"col":1,"dir":"down"},{"number":3,"clue":"Keeping secrets","answer":"PRIVACY","row":0,"col":2,"dir":"down"},{"number":4,"clue":"Hard speckled rock","answer":"GRANITE","row":0,"col":4,"dir":"down"},{"number":5,"clue":"Breakfast cereal grain","answer":"OAT","row":0,"col":5,"dir":"down"},{"number":6,"clue":"Color fabric","answer":"DYE","row":0,"col":6,"dir":"down"},{"number":10,"clue":"Angry, furious","answer":"MAD","row":2,"col":4,"dir":"down"},{"number":12,"clue":"Sit on Santa's ___","answer":"LAP","row":4,"col":0,"dir":"down"},{"number":13,"clue":"Time period","answer":"ERA","row":4,"col":2,"dir":"down"},{"number":14,"clue":"Zero, nothing","answer":"NIL","row":4,"col":4,"dir":"down"},{"number":15,"clue":"Precious stone","answer":"GEM","row":4,"col":5,"dir":"down"}]},"answers":{"across_1":"SOP","across_4":"GOD","across_7":"AIR","across_8":"RAY","across_9":"CLIMATE","across_11":"VAN","across_12":"LEADING","across_16":"ARC","across_17":"TIE","across_18":"PAY","across_19":"ELM","down_1":"SAC","down_2":"OIL","down_3":"PRIVACY","down_4":"GRANITE","down_5":"OAT","down_6":"DYE","down_10":"MAD","down_12":"LAP","down_13":"ERA","down_14":"NIL","down_15":"GEM"}},{"title":"Daylight","size":7,"gridData":[["S","E","W","#","G","A","S"],["P","E","A","#","R","I","P"],["A","L","R","E","A","D","Y"],["#","#","R","A","N","#","#"],["H","E","A","R","I","N","G"],["U","R","N","#","T","I","E"],["B","A","T","#","E","L","M"]],"clues":{"across":[{"number":1,"clue":"Stitch with a needle","answer":"SEW","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Fill up the tank","answer":"GAS","row":0,"col":4,"dir":"across"},{"number":7,"clue":"Green veggie in a pod","answer":"PEA","row":1,"col":0,"dir":"across"},{"number":8,"clue":"Tear apart","answer":"RIP","row":1,"col":4,"dir":"across"},{"number":9,"clue":"By this time","answer":"ALREADY","row":2,"col":0,"dir":"across"},{"number":11,"clue":"Jogged quickly","answer":"RAN","row":3,"col":2,"dir":"across"},{"number":12,"clue":"Court proceeding","answer":"HEARING","row":4,"col":0,"dir":"across"},{"number":16,"clue":"Vase for ashes","answer":"URN","row":5,"col":0,"dir":"across"},{"number":17,"clue":"Draw, make even","answer":"TIE","row":5,"col":4,"dir":"across"},{"number":18,"clue":"Baseball stick","answer":"BAT","row":6,"col":0,"dir":"across"},{"number":19,"clue":"Street tree","answer":"ELM","row":6,"col":4,"dir":"across"}],"down":[{"number":1,"clue":"Day at the ___","answer":"SPA","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Slippery fish","answer":"EEL","row":0,"col":1,"dir":"down"},{"number":3,"clue":"Guarantee or promise","answer":"WARRANT","row":0,"col":2,"dir":"down"},{"number":4,"clue":"Hard speckled rock","answer":"GRANITE","row":0,"col":4,"dir":"down"},{"number":5,"clue":"Help or assist","answer":"AID","row":0,"col":5,"dir":"down"},{"number":6,"clue":"Secret agent","answer":"SPY","row":0,"col":6,"dir":"down"},{"number":10,"clue":"Lobe location","answer":"EAR","row":2,"col":4,"dir":"down"},{"number":12,"clue":"Center of a wheel","answer":"HUB","row":4,"col":0,"dir":"down"},{"number":13,"clue":"Time period","answer":"ERA","row":4,"col":2,"dir":"down"},{"number":14,"clue":"Nothing at all","answer":"NIL","row":4,"col":4,"dir":"down"},{"number":15,"clue":"Precious stone","answer":"GEM","row":4,"col":5,"dir":"down"}]},"answers":{"across_1":"SEW","across_4":"GAS","across_7":"PEA","across_8":"RIP","across_9":"ALREADY","across_11":"RAN","across_12":"HEARING","across_16":"URN","across_17":"TIE","across_18":"BAT","across_19":"ELM","down_1":"SPA","down_2":"EEL","down_3":"WARRANT","down_4":"GRANITE","down_5":"AID","down_6":"SPY","down_10":"EAR","down_12":"HUB","down_13":"ERA","down_14":"NIL","down_15":"GEM"}},{"title":"Midday","size":7,"gridData":[["C","O","P","#","H","E","R"],["A","I","R","#","O","W","E"],["P","L","E","A","S","E","D"],["#","#","P","I","T","#","#"],["T","R","A","D","I","N","G"],["W","A","R","#","L","I","E"],["O","N","E","#","E","L","M"]],"clues":{"across":[{"number":1,"clue":"Police officer","answer":"COP","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Belonging to she","answer":"HER","row":0,"col":4,"dir":"across"},{"number":7,"clue":"Breathe this","answer":"AIR","row":1,"col":0,"dir":"across"},{"number":8,"clue":"Be in debt","answer":"OWE","row":1,"col":4,"dir":"across"},{"number":9,"clue":"Happy, satisfied","answer":"PLEASED","row":2,"col":0,"dir":"across"},{"number":11,"clue":"Deep hole in the ground","answer":"PIT","row":3,"col":2,"dir":"across"},{"number":12,"clue":"Buying and selling","answer":"TRADING","row":4,"col":0,"dir":"across"},{"number":16,"clue":"Armed conflict","answer":"WAR","row":5,"col":0,"dir":"across"},{"number":17,"clue":"Fib, not truth","answer":"LIE","row":5,"col":4,"dir":"across"},{"number":18,"clue":"Single number","answer":"ONE","row":6,"col":0,"dir":"across"},{"number":19,"clue":"Shade tree","answer":"ELM","row":6,"col":4,"dir":"across"}],"down":[{"number":1,"clue":"Hat or lid","answer":"CAP","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Cooking liquid","answer":"OIL","row":0,"col":1,"dir":"down"},{"number":3,"clue":"Get ready for","answer":"PREPARE","row":0,"col":2,"dir":"down"},{"number":4,"clue":"Unfriendly, mean","answer":"HOSTILE","row":0,"col":4,"dir":"down"},{"number":5,"clue":"Female sheep","answer":"EWE","row":0,"col":5,"dir":"down"},{"number":6,"clue":"Color like a rose","answer":"RED","row":0,"col":6,"dir":"down"},{"number":10,"clue":"Help out","answer":"AID","row":2,"col":4,"dir":"down"},{"number":12,"clue":"The number after one","answer":"TWO","row":4,"col":0,"dir":"down"},{"number":13,"clue":"Sprinted","answer":"RAN","row":4,"col":2,"dir":"down"},{"number":14,"clue":"Zero, zilch","answer":"NIL","row":4,"col":4,"dir":"down"},{"number":15,"clue":"Jewel","answer":"GEM","row":4,"col":5,"dir":"down"}]},"answers":{"across_1":"COP","across_4":"HER","across_7":"AIR","across_8":"OWE","across_9":"PLEASED","across_11":"PIT","across_12":"TRADING","across_16":"WAR","across_17":"LIE","across_18":"ONE","across_19":"ELM","down_1":"CAP","down_2":"OIL","down_3":"PREPARE","down_4":"HOSTILE","down_5":"EWE","down_6":"RED","down_10":"AID","down_12":"TWO","down_13":"RAN","down_14":"NIL","down_15":"GEM"}},{"title":"Sunset","size":7,"gridData":[["D","E","W","#","T","W","O"],["A","W","E","#","H","O","P"],["D","E","S","C","E","N","T"],["#","#","T","A","R","#","#"],["O","V","E","R","A","L","L"],["A","I","R","#","P","I","E"],["K","E","N","#","Y","E","T"]],"clues":{"across":[{"number":1,"clue":"Morning moisture","answer":"DEW","row":0,"col":0,"dir":"across"},{"number":4,"clue":"A pair","answer":"TWO","row":0,"col":4,"dir":"across"},{"number":7,"clue":"Jaw-dropping wonder","answer":"AWE","row":1,"col":0,"dir":"across"},{"number":8,"clue":"Quick jump","answer":"HOP","row":1,"col":4,"dir":"across"},{"number":9,"clue":"Going downward","answer":"DESCENT","row":2,"col":0,"dir":"across"},{"number":11,"clue":"Sticky road surface","answer":"TAR","row":3,"col":2,"dir":"across"},{"number":12,"clue":"All things considered","answer":"OVERALL","row":4,"col":0,"dir":"across"},{"number":16,"clue":"What we breathe","answer":"AIR","row":5,"col":0,"dir":"across"},{"number":17,"clue":"Dessert with a crust","answer":"PIE","row":5,"col":4,"dir":"across"},{"number":18,"clue":"Range of knowledge","answer":"KEN","row":6,"col":0,"dir":"across"},{"number":19,"clue":"Up to now","answer":"YET","row":6,"col":4,"dir":"across"}],"down":[{"number":1,"clue":"Father","answer":"DAD","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Female sheep","answer":"EWE","row":0,"col":1,"dir":"down"},{"number":3,"clue":"Cowboy movie genre","answer":"WESTERN","row":0,"col":2,"dir":"down"},{"number":4,"clue":"Counseling treatment","answer":"THERAPY","row":0,"col":4,"dir":"down"},{"number":5,"clue":"Came in first","answer":"WON","row":0,"col":5,"dir":"down"},{"number":6,"clue":"Choose, pick","answer":"OPT","row":0,"col":6,"dir":"down"},{"number":10,"clue":"Drive this vehicle","answer":"CAR","row":2,"col":4,"dir":"down"},{"number":12,"clue":"Strong tree","answer":"OAK","row":4,"col":0,"dir":"down"},{"number":13,"clue":"Compete with","answer":"VIE","row":4,"col":2,"dir":"down"},{"number":14,"clue":"Untruth","answer":"LIE","row":4,"col":4,"dir":"down"},{"number":15,"clue":"Allow, permit","answer":"LET","row":4,"col":5,"dir":"down"}]},"answers":{"across_1":"DEW","across_4":"TWO","across_7":"AWE","across_8":"HOP","across_9":"DESCENT","across_11":"TAR","across_12":"OVERALL","across_16":"AIR","across_17":"PIE","across_18":"KEN","across_19":"YET","down_1":"DAD","down_2":"EWE","down_3":"WESTERN","down_4":"THERAPY","down_5":"WON","down_6":"OPT","down_10":"CAR","down_12":"OAK","down_13":"VIE","down_14":"LIE","down_15":"LET"}},{"title":"Reunion","size":7,"gridData":[["S","O","P","#","S","H","Y"],["A","I","R","#","P","I","E"],["C","L","O","S","E","S","T"],["#","#","D","O","C","#","#"],["R","E","U","N","I","O","N"],["A","R","C","#","A","R","E"],["M","A","T","#","L","E","T"]],"clues":{"across":[{"number":1,"clue":"Something soaked up","answer":"SOP","row":0,"col":0,"dir":"across"},{"number":4,"clue":"Timid, bashful","answer":"SHY","row":0,"col":4,"dir":"across"},{"number":7,"clue":"Fresh oxygen","answer":"AIR","row":1,"col":0,"dir":"across"},{"number":8,"clue":"Slice of dessert","answer":"PIE","row":1,"col":4,"dir":"across"},{"number":9,"clue":"Nearest of all","answer":"CLOSEST","row":2,"col":0,"dir":"across"},{"number":11,"clue":"Doctor, for short","answer":"DOC","row":3,"col":2,"dir":"across"},{"number":12,"clue":"Family get-together","answer":"REUNION","row":4,"col":0,"dir":"across"},{"number":16,"clue":"Rainbow shape","answer":"ARC","row":5,"col":0,"dir":"across"},{"number":17,"clue":"To exist","answer":"ARE","row":5,"col":4,"dir":"across"},{"number":18,"clue":"Doorway rug","answer":"MAT","row":6,"col":0,"dir":"across"},{"number":19,"clue":"Allow","answer":"LET","row":6,"col":4,"dir":"across"}],"down":[{"number":1,"clue":"Small bag","answer":"SAC","row":0,"col":0,"dir":"down"},{"number":2,"clue":"Engine lubricant","answer":"OIL","row":0,"col":1,"dir":"down"},{"number":3,"clue":"Something you make","answer":"PRODUCT","row":0,"col":2,"dir":"down"},{"number":4,"clue":"Unique, one of a kind","answer":"SPECIAL","row":0,"col":4,"dir":"down"},{"number":5,"clue":"Belonging to him","answer":"HIS","row":0,"col":5,"dir":"down"},{"number":6,"clue":"Up to now","answer":"YET","row":0,"col":6,"dir":"down"},{"number":10,"clue":"Male child","answer":"SON","row":2,"col":4,"dir":"down"},{"number":12,"clue":"Male goat","answer":"RAM","row":4,"col":0,"dir":"down"},{"number":13,"clue":"Time period","answer":"ERA","row":4,"col":2,"dir":"down"},{"number":14,"clue":"Mineral rock","answer":"ORE","row":4,"col":4,"dir":"down"},{"number":15,"clue":"Fishing trap","answer":"NET","row":4,"col":5,"dir":"down"}]},"answers":{"across_1":"SOP","across_4":"SHY","across_7":"AIR","across_8":"PIE","across_9":"CLOSEST","across_11":"DOC","across_12":"REUNION","across_16":"ARC","across_17":"ARE","across_18":"MAT","across_19":"LET","down_1":"SAC","down_2":"OIL","down_3":"PRODUCT","down_4":"SPECIAL","down_5":"HIS","down_6":"YET","down_10":"SON","down_12":"RAM","down_13":"ERA","down_14":"ORE","down_15":"NET"}}]
+;
 
 function getEmbeddedPuzzle() {
   const p = EMBEDDED_PUZZLES[Math.floor(Math.random()*EMBEDDED_PUZZLES.length)];
@@ -608,7 +519,7 @@ function setDirection(dir) {
 function toggleClueDrawer() { document.getElementById('clueDrawer').classList.toggle('open'); }
 
 /* ═══ GAME FLOW ═══ */
-async function startGame() {
+function startGame() {
   const name = document.getElementById('inputName').value.trim();
   if (!name) { document.getElementById('inputName').focus(); return; }
   state.playerName=name; state.playerId='solo'; state.mode='solo';
@@ -616,12 +527,12 @@ async function startGame() {
   if (state.puzzleType==='custom') {
     const id = document.getElementById('customPuzzleSelect').value;
     const found = state.customPuzzles.find(p=>p.id===id);
-    puzzle = found ? {source:'custom',...found} : await generateAPIPuzzle();
-  } else { puzzle = await generateAPIPuzzle(); }
+    puzzle = found ? {source:'custom',...found} : getEmbeddedPuzzle();
+  } else { puzzle = getEmbeddedPuzzle(); }
   state.puzzle = puzzle;
   initGame();
 }
-async function createRoom() {
+function createRoom() {
   const name = document.getElementById('inputName').value.trim();
   if (!name) { document.getElementById('inputName').focus(); return; }
   state.playerName=name; state.playerId='p1';
@@ -630,8 +541,8 @@ async function createRoom() {
   if (state.puzzleType==='custom') {
     const id = document.getElementById('customPuzzleSelect').value;
     const found = state.customPuzzles.find(p=>p.id===id);
-    puzzle = found ? {source:'custom',...found} : await generateAPIPuzzle();
-  } else { puzzle = await generateAPIPuzzle(); }
+    puzzle = found ? {source:'custom',...found} : getEmbeddedPuzzle();
+  } else { puzzle = getEmbeddedPuzzle(); }
   state.puzzle = puzzle;
   const ref = db.ref('rooms/'+state.roomCode);
   state.roomRef = ref;
@@ -691,6 +602,56 @@ function copyShareUrl() {
 }
 
 /* ═══ INIT GAME ═══ */
+function saveGameState() {
+  if (!state.puzzle || state.mode !== 'solo') return;
+  try {
+    const filledCells = {};
+    const rows = state.grid.length, cols = state.grid[0].length;
+    for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+      const v = state.grid[r][c].filled?.shared || '';
+      if (v) filledCells[`${r}_${c}`] = v;
+    }
+    const data = {
+      puzzleTitle: state.puzzle.title,
+      filledCells,
+      timerStart: state.timerStart,
+      elapsed: Date.now() - state.timerStart,
+      puzzle: state.puzzle,
+      playerName: state.playerName,
+    };
+    localStorage.setItem('mwv_save', JSON.stringify(data));
+  } catch(e) {}
+}
+function restoreGameState() {
+  try {
+    const raw = localStorage.getItem('mwv_save');
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data.puzzle || !data.filledCells) return false;
+    state.puzzle = data.puzzle;
+    state.playerName = data.playerName || 'Player';
+    state.mode = 'solo';
+    state.playerId = 'solo';
+    document.getElementById('inputName').value = state.playerName;
+    initGame();
+    // Restore filled cells
+    const rows = state.grid.length, cols = state.grid[0].length;
+    for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+      const v = data.filledCells[`${r}_${c}`];
+      if (v) {
+        state.grid[r][c].filled.shared = v;
+        const el = document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"] .cell-letter`);
+        if (el) el.textContent = v;
+      }
+    }
+    // Restore timer
+    state.timerStart = Date.now() - (data.elapsed || 0);
+    return true;
+  } catch(e) { return false; }
+}
+function clearSavedGame() {
+  try { localStorage.removeItem('mwv_save'); } catch(e) {}
+}
 function initGame() {
   state.gameComplete=false; state.scores={p1:0,p2:0};
   state.selectedCell=null; state.direction='across';
@@ -829,9 +790,17 @@ function updateActiveClue() {
   const {row,col}=state.selectedCell;
   const cd=state.grid[row][col];
   const clue = state.direction==='across'?cd.acrossClue:cd.downClue;
+  // Remove old highlight
+  document.querySelectorAll('.clue-item.active').forEach(el => el.classList.remove('active'));
   if (clue) {
     document.getElementById('activeClueNum').textContent = `${clue.number}${clue.dir==='across'?'A':'D'}`;
     document.getElementById('activeClueText').textContent = clue.clue;
+    // Highlight active clue in panel
+    const clueEl = document.getElementById(`clue_${clue.dir}_${clue.number}`);
+    if (clueEl) {
+      clueEl.classList.add('active');
+      clueEl.scrollIntoView({block:'nearest',behavior:'smooth'});
+    }
   }
 }
 
@@ -862,6 +831,7 @@ function typeLetter(l) {
   if (!state.selectedCell||state.gameComplete) return;
   setLetter(state.selectedCell.row,state.selectedCell.col,l);
   advanceCursor();
+  saveGameState();
 }
 
 function handleBackspace() {
@@ -869,6 +839,7 @@ function handleBackspace() {
   const {row,col}=state.selectedCell;
   if (getDisplayed(row,col)) { setLetter(row,col,''); }
   else { retreatCursor(); if (state.selectedCell) setLetter(state.selectedCell.row,state.selectedCell.col,''); }
+  saveGameState();
 }
 
 function getDisplayed(r,c) {
@@ -972,7 +943,7 @@ function checkCompletion() {
     }
   }
   document.getElementById('hudScore').textContent = `${done}/${total}`;
-  if (done===total) { state.gameComplete=true; clearInterval(state.timerInterval); showWinScreen(); }
+  if (done===total) { state.gameComplete=true; clearInterval(state.timerInterval); clearSavedGame(); showWinScreen(); }
 }
 
 /* ═══ WIN ═══ */
@@ -1051,6 +1022,27 @@ function handleOSKPress(e) {
 }
 document.getElementById('osk').addEventListener('touchend', handleOSKPress);
 document.getElementById('osk').addEventListener('click', handleOSKPress);
+
+// Save state when page loses focus (user switches apps on mobile)
+document.addEventListener('visibilitychange', () => { if (document.hidden) saveGameState(); });
+window.addEventListener('beforeunload', () => saveGameState());
+
+// Check for saved game on page load — show Resume button
+(function checkSavedGame(){
+  try {
+    const raw = localStorage.getItem('mwv_save');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (!data.puzzle || !data.filledCells) return;
+    const btn = document.createElement('button');
+    btn.className = 'btn-primary';
+    btn.style.cssText = 'margin-top:8px;width:100%;background:var(--sage);color:#fff';
+    btn.textContent = '\u21a9 Resume: ' + (data.puzzle.title||'Puzzle');
+    btn.onclick = () => { restoreGameState(); };
+    const playBtn = document.getElementById('btnPlay');
+    playBtn.parentNode.insertBefore(btn, playBtn.nextSibling);
+  } catch(e){}
+})();
 </script>
 </body>
 </html>
