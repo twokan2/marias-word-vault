@@ -247,6 +247,27 @@ body::before {
 .clue-item-text { font-size: 0.8rem; color: var(--ink-soft); }
 .clue-item.completed .clue-item-text { text-decoration: line-through; color: var(--ink-faint); }
 
+/* ═══ WORD SEARCH ═══ */
+#screenWordSearch { flex-direction: column; align-items: stretch; overflow: hidden; }
+.ws-word-bank {
+  display: flex; flex-wrap: wrap; gap: 6px 12px;
+  padding: 8px 12px; background: var(--paper-warm);
+  border-bottom: 1px solid var(--paper-dim);
+  max-height: 80px; overflow-y: auto;
+  -webkit-overflow-scrolling: touch; flex-shrink: 0;
+}
+.ws-word {
+  font-family: 'DM Mono', monospace; font-size: 0.72rem;
+  font-weight: 500; color: var(--ink-soft); letter-spacing: 1px;
+  text-transform: uppercase; padding: 2px 6px; border-radius: 4px;
+  background: var(--paper); border: 1px solid var(--paper-dim);
+  transition: all 0.3s;
+}
+.ws-word.found {
+  text-decoration: line-through; color: var(--ink-faint);
+  background: var(--sage-light); border-color: var(--sage-light);
+}
+
 /* ═══ WIN ═══ */
 #screenWin { justify-content: center; padding: 24px; text-align: center; }
 .win-ornament { font-size: 3rem; margin-bottom: 12px; }
@@ -274,13 +295,21 @@ body::before {
   <div class="lobby-masthead">
     <div class="lobby-rule"></div>
     <div class="lobby-title font-display">Maria's Word Vault</div>
-    <div class="lobby-subtitle font-mono">A Crossword for Two</div>
+    <div class="lobby-subtitle font-mono">Crosswords & Word Search</div>
   </div>
   <div class="lobby-card">
     <div class="lobby-section">
+      <div class="lobby-label">Game</div>
+      <div class="mode-row">
+        <button class="mode-btn selected" onclick="setGameType('crossword', this)">📰 Crossword</button>
+        <button class="mode-btn" onclick="setGameType('wordsearch', this)">🔍 Word Search</button>
+      </div>
+    </div>
+    <div class="lobby-section" id="nameSection">
       <div class="lobby-label">Your Name</div>
       <input type="text" id="inputName" class="lobby-input" placeholder="Enter your name" maxlength="20" autocomplete="off">
     </div>
+    <div id="cwLobbyOptions">
     <div class="lobby-section">
       <div class="lobby-label">Puzzle Source</div>
       <div class="puzzle-row">
@@ -299,7 +328,7 @@ body::before {
         <button class="mode-btn" onclick="setMode('competitive', this)">⚔️ Vs</button>
       </div>
     </div>
-    <div class="lobby-section" id="roomArea">
+    <div class="lobby-section" id="roomArea" style="display:none">
       <div style="display:flex;gap:8px;margin-bottom:10px">
         <button class="btn-primary btn-gold" style="flex:1;margin:0" id="btnCreate" onclick="createRoom()">Create Room</button>
       </div>
@@ -310,6 +339,16 @@ body::before {
       </div>
     </div>
     <button class="btn-primary btn-gold" id="btnPlay" onclick="startGame()">Begin Puzzle</button>
+    </div>
+    <div id="wsLobbyOptions" style="display:none">
+    <div class="lobby-section">
+      <div class="lobby-label">Theme</div>
+      <select id="wsThemeSelect" class="lobby-select" style="display:block">
+        <option value="random">🎲 Random</option>
+      </select>
+    </div>
+    <button class="btn-primary btn-gold" onclick="startWordSearch()" style="width:100%">Begin Word Search</button>
+    </div>
     <div id="puzzleStatus" class="puzzle-status"></div>
     <div class="lobby-links">
       <button onclick="showScreen('screenInstructions')">How to Play</button>
@@ -326,7 +365,7 @@ body::before {
     <div class="instr-rule"></div>
     <div class="instr-section">
       <div class="instr-heading">The Basics</div>
-      <div class="instr-text">Fill in every white square with a letter to complete all the words. Each puzzle is a <strong>5×5 mini crossword</strong> with 3 words going across and 3 words going down. Letters are shared where words cross — get one right and it helps solve the other.</div>
+      <div class="instr-text"><strong>Crossword:</strong> Fill in every white square with a letter to complete all the words. Each puzzle is a <strong>7×7 mini crossword</strong> with words going across and down. Letters are shared where words cross.<br><br><strong>Word Search:</strong> Find the hidden words in the letter grid. Drag your finger (or mouse) from the first letter to the last to highlight each word. Words can go in any direction — horizontal, vertical, diagonal, even backwards!</div>
     </div>
     <div class="instr-section">
       <div class="instr-heading">Controls</div>
@@ -415,6 +454,22 @@ body::before {
   </div>
 </div>
 
+<!-- SCREEN: WORD SEARCH GAME -->
+<div id="screenWordSearch" class="screen">
+  <div class="game-header">
+    <button class="hud-back" onclick="exitWordSearch()">✕</button>
+    <div class="hud-title font-display" id="wsHudTitle">Word Search</div>
+    <div class="hud-right">
+      <div class="hud-score font-mono" id="wsHudScore">0/8</div>
+      <div class="hud-timer font-mono" id="wsHudTimer">0:00</div>
+    </div>
+  </div>
+  <div class="ws-word-bank" id="wsWordBank"></div>
+  <div class="grid-wrapper" id="wsGridWrapper">
+    <canvas id="wsCanvas" style="touch-action:none;"></canvas>
+  </div>
+</div>
+
 <!-- SCREEN: WIN -->
 <div id="screenWin" class="screen">
   <div class="win-ornament">🏆</div>
@@ -447,7 +502,7 @@ const db = firebase.database();
 /* STATE */
 const state = {
   playerName:'', playerId:'', roomCode:'', mode:'solo',
-  puzzleType:'random', puzzle:null, grid:[],
+  gameType:'crossword', puzzleType:'random', puzzle:null, grid:[],
   selectedCell:null, direction:'across',
   clues:{across:[],down:[]}, answers:{},
   scores:{p1:0,p2:0},
@@ -491,8 +546,10 @@ function showScreen(id) {
 }
 function setMode(mode, el) {
   state.mode = mode;
-  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
-  if (el) el.classList.add('selected');
+  if (el) {
+    el.parentElement.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  }
   const roomArea = document.getElementById('roomArea');
   const btnPlay = document.getElementById('btnPlay');
   if (mode === 'solo') {
@@ -1022,6 +1079,327 @@ function handleOSKPress(e) {
 }
 document.getElementById('osk').addEventListener('touchend', handleOSKPress);
 document.getElementById('osk').addEventListener('click', handleOSKPress);
+
+/* ═══════════════════════════════════════════════ */
+/*  WORD SEARCH ENGINE                             */
+/* ═══════════════════════════════════════════════ */
+
+const WS_THEMES = [
+  { name: "🐾 Animals", words: ["TIGER","EAGLE","WHALE","HORSE","SNAKE","DOLPHIN","RABBIT","FALCON","PANDA","SHARK"] },
+  { name: "🍕 Food & Drink", words: ["PASTA","MANGO","BREAD","JUICE","SALAD","CHEESE","COFFEE","PEPPER","OLIVE","STEAK"] },
+  { name: "✈️ Travel", words: ["BEACH","HOTEL","PARIS","TRAIN","ISLAND","TEMPLE","SAFARI","CRUISE","LONDON","HIKING"] },
+  { name: "🎵 Music", words: ["PIANO","DRUMS","BLUES","GUITAR","MELODY","RHYTHM","SINGER","CHORUS","TEMPO","VINYL"] },
+  { name: "⚽ Sports", words: ["SOCCER","TENNIS","RUGBY","BOXING","SPRINT","HOCKEY","DIVING","GOLF","RELAY","TRACK"] },
+  { name: "🌿 Nature", words: ["RIVER","OCEAN","STORM","FOREST","MEADOW","CANYON","SUNSET","BREEZE","CORAL","BLOOM"] },
+  { name: "🔬 Science", words: ["ATOMS","ORBIT","SOLAR","LIGHT","GRAVITY","ENERGY","PLASMA","GENOME","QUARK","LASER"] },
+  { name: "🎬 Movies", words: ["SCENE","ACTOR","DRAMA","COMEDY","SCRIPT","SEQUEL","STUDIO","HORROR","HEIST","AWARD"] },
+];
+
+// Populate theme selector
+(function populateWSThemes(){
+  const sel = document.getElementById('wsThemeSelect');
+  if (!sel) return;
+  WS_THEMES.forEach((t,i) => {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = t.name;
+    sel.appendChild(opt);
+  });
+})();
+
+const ws = {
+  grid: [], words: [], placed: [], found: new Set(),
+  rows: 10, cols: 10, cellSize: 0,
+  canvas: null, ctx: null,
+  dragging: false, dragStart: null, dragEnd: null,
+  timerStart: null, timerInterval: null,
+  theme: null, foundLines: [],
+};
+
+const WS_DIRS = [
+  {dr:0,dc:1},{dr:1,dc:0},{dr:1,dc:1},{dr:-1,dc:1},
+  {dr:0,dc:-1},{dr:-1,dc:0},{dr:-1,dc:-1},{dr:1,dc:-1}
+];
+
+function generateWordSearch(words, rows, cols) {
+  const grid = Array.from({length:rows}, ()=> Array(cols).fill(''));
+  const placed = [];
+  // Shuffle words, try longest first
+  const sorted = [...words].sort((a,b)=>b.length-a.length);
+  for (const word of sorted) {
+    let didPlace = false;
+    const dirs = [...WS_DIRS].sort(()=>Math.random()-0.5);
+    const attempts = 80;
+    for (let a=0;a<attempts&&!didPlace;a++) {
+      const dir = dirs[a%dirs.length];
+      const maxR = rows - (dir.dr>0? word.length-1 : dir.dr<0? -(word.length-1) : 0);
+      const maxC = cols - (dir.dc>0? word.length-1 : dir.dc<0? -(word.length-1) : 0);
+      const minR = dir.dr<0? word.length-1 : 0;
+      const minC = dir.dc<0? word.length-1 : 0;
+      if (minR>=maxR || minC>=maxC) continue;
+      const r = minR + Math.floor(Math.random()*(maxR-minR));
+      const c = minC + Math.floor(Math.random()*(maxC-minC));
+      let ok = true;
+      for (let i=0;i<word.length;i++) {
+        const nr=r+dir.dr*i, nc=c+dir.dc*i;
+        if (nr<0||nr>=rows||nc<0||nc>=cols) {ok=false;break;}
+        const existing = grid[nr][nc];
+        if (existing && existing !== word[i]) {ok=false;break;}
+      }
+      if (ok) {
+        for (let i=0;i<word.length;i++) grid[r+dir.dr*i][c+dir.dc*i]=word[i];
+        placed.push({word, row:r, col:c, dr:dir.dr, dc:dir.dc});
+        didPlace = true;
+      }
+    }
+  }
+  // Fill blanks
+  const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+    if (!grid[r][c]) grid[r][c]=alpha[Math.floor(Math.random()*26)];
+  }
+  return {grid, placed};
+}
+
+function setGameType(type, el) {
+  const row = el.parentElement;
+  row.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  state.gameType = type;
+  document.getElementById('cwLobbyOptions').style.display = type==='crossword'?'':'none';
+  document.getElementById('wsLobbyOptions').style.display = type==='wordsearch'?'':'none';
+}
+
+function startWordSearch() {
+  const name = document.getElementById('inputName').value.trim();
+  if (!name) { document.getElementById('inputName').focus(); return; }
+  state.playerName = name;
+
+  const sel = document.getElementById('wsThemeSelect');
+  let theme;
+  if (sel.value === 'random') {
+    theme = WS_THEMES[Math.floor(Math.random()*WS_THEMES.length)];
+  } else {
+    theme = WS_THEMES[parseInt(sel.value)];
+  }
+  ws.theme = theme;
+  ws.words = theme.words.map(w=>w.toUpperCase());
+  ws.found = new Set();
+  ws.foundLines = [];
+  ws.rows = 10; ws.cols = 10;
+
+  const result = generateWordSearch(ws.words, ws.rows, ws.cols);
+  ws.grid = result.grid;
+  ws.placed = result.placed;
+
+  // Build word bank
+  const bank = document.getElementById('wsWordBank');
+  bank.innerHTML = '';
+  ws.words.forEach(w => {
+    const isPlaced = ws.placed.some(p=>p.word===w);
+    if (!isPlaced) return; // Skip words that couldn't fit
+    const span = document.createElement('span');
+    span.className = 'ws-word'; span.id = 'wsw_'+w;
+    span.textContent = w;
+    bank.appendChild(span);
+  });
+
+  document.getElementById('wsHudTitle').textContent = theme.name;
+  const totalWords = ws.placed.length;
+  document.getElementById('wsHudScore').textContent = `0/${totalWords}`;
+
+  ws.timerStart = Date.now();
+  clearInterval(ws.timerInterval);
+  ws.timerInterval = setInterval(()=>{
+    const s=Math.floor((Date.now()-ws.timerStart)/1000);
+    document.getElementById('wsHudTimer').textContent=`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
+  }, 1000);
+
+  showScreen('screenWordSearch');
+  requestAnimationFrame(initWSCanvas);
+}
+
+function initWSCanvas() {
+  const wrapper = document.getElementById('wsGridWrapper');
+  const canvas = document.getElementById('wsCanvas');
+  ws.canvas = canvas; ws.ctx = canvas.getContext('2d');
+
+  const aW = wrapper.clientWidth - 16;
+  const aH = wrapper.clientHeight - 16;
+  const cs = Math.min(Math.floor(aW/ws.cols), Math.floor(aH/ws.rows), 48);
+  ws.cellSize = cs;
+
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = (cs * ws.cols) * dpr;
+  canvas.height = (cs * ws.rows) * dpr;
+  canvas.style.width = (cs * ws.cols) + 'px';
+  canvas.style.height = (cs * ws.rows) + 'px';
+  ws.ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  drawWSGrid();
+  // Touch/mouse listeners
+  canvas.onpointerdown = wsPointerDown;
+  canvas.onpointermove = wsPointerMove;
+  canvas.onpointerup = wsPointerUp;
+  canvas.onpointercancel = wsPointerUp;
+}
+
+function wsGridCoord(e) {
+  const rect = ws.canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const c = Math.floor(x / ws.cellSize);
+  const r = Math.floor(y / ws.cellSize);
+  return {r: Math.max(0,Math.min(r,ws.rows-1)), c: Math.max(0,Math.min(c,ws.cols-1))};
+}
+
+function wsPointerDown(e) {
+  e.preventDefault();
+  ws.canvas.setPointerCapture(e.pointerId);
+  ws.dragging = true;
+  ws.dragStart = wsGridCoord(e);
+  ws.dragEnd = ws.dragStart;
+  drawWSGrid();
+}
+
+function wsPointerMove(e) {
+  if (!ws.dragging) return;
+  e.preventDefault();
+  const coord = wsGridCoord(e);
+  // Snap to valid line (horizontal, vertical, or diagonal)
+  const dr = coord.r - ws.dragStart.r;
+  const dc = coord.c - ws.dragStart.c;
+  const absDr = Math.abs(dr), absDc = Math.abs(dc);
+  let snapR = ws.dragStart.r, snapC = ws.dragStart.c;
+  if (absDr <= 1 && absDc <= 1) {
+    snapR = coord.r; snapC = coord.c;
+  } else if (absDc === 0) {
+    snapR = coord.r; snapC = ws.dragStart.c;
+  } else if (absDr === 0) {
+    snapR = ws.dragStart.r; snapC = coord.c;
+  } else if (Math.abs(absDr-absDc) <= 1) {
+    const dist = Math.max(absDr, absDc);
+    snapR = ws.dragStart.r + Math.sign(dr)*dist;
+    snapC = ws.dragStart.c + Math.sign(dc)*dist;
+  } else if (absDr > absDc) {
+    const dist = absDr;
+    snapR = ws.dragStart.r + Math.sign(dr)*dist;
+    snapC = ws.dragStart.c;
+  } else {
+    const dist = absDc;
+    snapR = ws.dragStart.r;
+    snapC = ws.dragStart.c + Math.sign(dc)*dist;
+  }
+  snapR = Math.max(0,Math.min(snapR,ws.rows-1));
+  snapC = Math.max(0,Math.min(snapC,ws.cols-1));
+  ws.dragEnd = {r:snapR, c:snapC};
+  drawWSGrid();
+}
+
+function wsPointerUp(e) {
+  if (!ws.dragging) return;
+  ws.dragging = false;
+  // Check if selection matches a word
+  if (ws.dragStart && ws.dragEnd) {
+    const sr=ws.dragStart.r, sc=ws.dragStart.c, er=ws.dragEnd.r, ec=ws.dragEnd.c;
+    const dr = er===sr ? 0 : (er>sr?1:-1);
+    const dc = ec===sc ? 0 : (ec>sc?1:-1);
+    const len = Math.max(Math.abs(er-sr), Math.abs(ec-sc))+1;
+    let selected = '';
+    for (let i=0;i<len;i++) selected += ws.grid[sr+dr*i][sc+dc*i];
+
+    // Check forward and reverse
+    for (const p of ws.placed) {
+      if (ws.found.has(p.word)) continue;
+      if (p.word === selected || p.word === selected.split('').reverse().join('')) {
+        ws.found.add(p.word);
+        ws.foundLines.push({r1:sr,c1:sc,r2:er,c2:ec});
+        const el = document.getElementById('wsw_'+p.word);
+        if (el) el.classList.add('found');
+        document.getElementById('wsHudScore').textContent = `${ws.found.size}/${ws.placed.length}`;
+        if (ws.found.size === ws.placed.length) {
+          clearInterval(ws.timerInterval);
+          setTimeout(showWSWin, 400);
+        }
+        break;
+      }
+    }
+  }
+  ws.dragStart = null; ws.dragEnd = null;
+  drawWSGrid();
+}
+
+function drawWSGrid() {
+  const ctx = ws.ctx;
+  const cs = ws.cellSize;
+  const w = cs*ws.cols, h = cs*ws.rows;
+  // Background
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0,0,w,h);
+
+  // Grid lines
+  ctx.strokeStyle = '#ddd';
+  ctx.lineWidth = 0.5;
+  for (let r=0;r<=ws.rows;r++) {
+    ctx.beginPath(); ctx.moveTo(0,r*cs); ctx.lineTo(w,r*cs); ctx.stroke();
+  }
+  for (let c=0;c<=ws.cols;c++) {
+    ctx.beginPath(); ctx.moveTo(c*cs,0); ctx.lineTo(c*cs,h); ctx.stroke();
+  }
+
+  // Found word highlights
+  for (const line of ws.foundLines) {
+    drawWSLine(line.r1, line.c1, line.r2, line.c2, 'rgba(74,124,94,0.25)', cs*0.7);
+  }
+
+  // Active drag highlight
+  if (ws.dragging && ws.dragStart && ws.dragEnd) {
+    drawWSLine(ws.dragStart.r, ws.dragStart.c, ws.dragEnd.r, ws.dragEnd.c, 'rgba(107,163,214,0.35)', cs*0.7);
+  }
+
+  // Letters
+  ctx.fillStyle = '#1a1208';
+  ctx.font = `700 ${cs*0.48}px 'DM Sans', sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (let r=0;r<ws.rows;r++) {
+    for (let c=0;c<ws.cols;c++) {
+      ctx.fillText(ws.grid[r][c], c*cs+cs/2, r*cs+cs/2+1);
+    }
+  }
+
+  // Border
+  ctx.strokeStyle = '#1a1208';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(0,0,w,h);
+}
+
+function drawWSLine(r1,c1,r2,c2,color,width) {
+  const ctx = ws.ctx;
+  const cs = ws.cellSize;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(c1*cs+cs/2, r1*cs+cs/2);
+  ctx.lineTo(c2*cs+cs/2, r2*cs+cs/2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function showWSWin() {
+  const elapsed=Math.floor((Date.now()-ws.timerStart)/1000);
+  const ts=`${Math.floor(elapsed/60)}:${(elapsed%60).toString().padStart(2,'0')}`;
+  document.getElementById('winTitle').textContent=`Nice work, ${state.playerName}!`;
+  document.getElementById('winSubtitle').textContent=ws.theme?.name||'Word Search';
+  document.getElementById('winStats').innerHTML=`<div style="text-align:center"><div class="win-stat-val">${ts}</div><div class="win-stat-label">Time</div></div><div style="text-align:center"><div class="win-stat-val">${ws.placed.length}</div><div class="win-stat-label">Words</div></div>`;
+  document.getElementById('winScores').style.display='none';
+  showScreen('screenWin');
+}
+
+function exitWordSearch() {
+  clearInterval(ws.timerInterval);
+  showScreen('screenLobby');
+}
 
 // Save state when page loses focus (user switches apps on mobile)
 document.addEventListener('visibilitychange', () => { if (document.hidden) saveGameState(); });
