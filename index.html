@@ -98,7 +98,6 @@ body::before {
 }
 .btn-outline-sm:hover { border-color: var(--gold); color: var(--ink); }
 #roomArea { display: none; }
-#customPuzzleArea { display: none; }
 .lobby-select {
   font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
   padding: 8px 12px; border: 2px solid var(--paper-dim); border-radius: 2px;
@@ -269,14 +268,42 @@ body::before {
 }
 
 /* ═══ WIN ═══ */
-#screenWin { justify-content: center; padding: 24px; text-align: center; }
-.win-ornament { font-size: 3rem; margin-bottom: 12px; }
+#screenWin { justify-content: center; padding: 24px; text-align: center; position: relative; overflow: hidden; }
+.win-ornament { font-size: 3.5rem; margin-bottom: 12px; }
 .win-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; }
 .win-subtitle { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--ink-faint); margin-bottom: 20px; }
 .win-stats { display: flex; gap: 24px; justify-content: center; margin-bottom: 24px; }
 .win-stat-val { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 800; color: var(--gold); }
 .win-stat-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--ink-faint); letter-spacing: 2px; text-transform: uppercase; }
-.win-scores { display: flex; gap: 16px; justify-content: center; margin-bottom: 20px; }
+.win-scores { display: flex; flex-direction: column; gap: 16px; justify-content: center; margin-bottom: 20px; }
+
+@keyframes trophy-bounce {
+  0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+  50% { transform: scale(1.3) rotate(5deg); opacity: 1; }
+  70% { transform: scale(0.9) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+@keyframes trophy-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(196,148,62,0.3)); }
+  50% { filter: drop-shadow(0 0 20px rgba(196,148,62,0.7)); }
+}
+@keyframes win-reveal {
+  0% { opacity: 0; transform: translateY(20px) scale(0.9); }
+  60% { opacity: 1; transform: translateY(-4px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes stat-pop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.win-stats { animation: stat-pop 0.5s ease-out 0.4s both; }
+.win-scores { animation: stat-pop 0.5s ease-out 0.7s both; }
+
+.btn-outline-sm {
+  background: none; border: 1px solid var(--ink-faint); border-radius: 6px;
+  font-family: 'DM Mono', monospace; cursor: pointer; color: var(--ink-faint);
+}
 
 .loading-spinner {
   display: inline-block; width: 18px; height: 18px;
@@ -306,20 +333,10 @@ body::before {
       </div>
     </div>
     <div class="lobby-section" id="nameSection">
-      <div class="lobby-label">Your Name</div>
-      <input type="text" id="inputName" class="lobby-input" placeholder="Enter your name" maxlength="20" autocomplete="off">
+      <div class="lobby-label">Wat Dey Call U</div>
+      <input type="text" id="inputName" class="lobby-input" placeholder="Your name" maxlength="20" autocomplete="off">
     </div>
     <div id="cwLobbyOptions">
-    <div class="lobby-section">
-      <div class="lobby-label">Puzzle Source</div>
-      <div class="puzzle-row">
-        <button class="puzzle-btn selected" onclick="setPuzzleType('random', this)">📰 Daily</button>
-        <button class="puzzle-btn" onclick="setPuzzleType('custom', this)">👨‍👩‍👧 Family</button>
-      </div>
-      <div id="customPuzzleArea" style="margin-top:8px">
-        <select id="customPuzzleSelect" class="lobby-select"></select>
-      </div>
-    </div>
     <div class="lobby-section">
       <div class="lobby-label">Mode</div>
       <div class="mode-row">
@@ -347,13 +364,20 @@ body::before {
         <option value="random">🎲 Random</option>
       </select>
     </div>
+    <div class="lobby-section">
+      <div class="lobby-label">Stakes</div>
+      <div class="mode-row">
+        <button class="mode-btn" onclick="setRanked(false,this)">😎 Casual</button>
+        <button class="mode-btn selected" onclick="setRanked(true,this)">🏆 Ranked</button>
+      </div>
+      <div style="font-size:0.65rem;color:var(--ink-faint);margin-top:4px" id="rankedHint">Your time goes on the global leaderboard</div>
+    </div>
     <button class="btn-primary btn-gold" onclick="startWordSearch()" style="width:100%">Begin Word Search</button>
     </div>
     <div id="puzzleStatus" class="puzzle-status"></div>
     <div class="lobby-links">
       <button onclick="showScreen('screenInstructions')">How to Play</button>
       <button onclick="showScreen('screenRankings')">🏆 Rankings</button>
-      <a href="builder.html">Puzzle Builder</a>
     </div>
   </div>
 </div>
@@ -365,37 +389,38 @@ body::before {
     <div class="instr-title font-display">How to Play</div>
     <div class="instr-rule"></div>
     <div class="instr-section">
-      <div class="instr-heading">The Basics</div>
-      <div class="instr-text"><strong>Crossword:</strong> Fill in every white square with a letter to complete all the words. Each puzzle is a <strong>7×7 mini crossword</strong> with words going across and down. Letters are shared where words cross.<br><br><strong>Word Search:</strong> Find the hidden words in the letter grid. Drag your finger (or mouse) from the first letter to the last to highlight each word. Words can go in any direction — horizontal, vertical, diagonal, even backwards!</div>
+      <div class="instr-heading">📰 Crossword</div>
+      <div class="instr-text">Fill in every white square to complete all the words. Each puzzle is a <strong>7×7 mini crossword</strong> with words going across and down. Letters are shared where words cross.</div>
     </div>
     <div class="instr-section">
-      <div class="instr-heading">Controls</div>
+      <div class="instr-heading">Crossword Controls</div>
       <div class="instr-text">
-        <strong>Tap a white cell</strong> to select it. The active word highlights in blue and the clue appears at the top.<br><br>
-        <strong>Tap the same cell again</strong> to switch between Across and Down. You can also use the direction buttons or the ⇄ DIR key.<br><br>
-        <strong>Type a letter</strong> using the on-screen keyboard (or physical keyboard on desktop). The cursor advances automatically.<br><br>
-        <strong>⌫</strong> removes the letter in the current cell, or moves backward if empty.<br><br>
-        <strong>☰</strong> opens the full clue list. Tap any clue to jump to that word on the grid.
+        <strong>Tap a cell</strong> to select it — the active word highlights and the clue shows at the top.<br><br>
+        <strong>Tap the same cell again</strong> to switch between Across and Down.<br><br>
+        <strong>Type a letter</strong> on the keyboard — the cursor advances automatically.<br><br>
+        <strong>⌫</strong> removes the letter or moves backward if empty.<br><br>
+        <strong>☰</strong> opens the full clue list — tap any clue to jump to that word.
       </div>
     </div>
     <div class="instr-section">
-      <div class="instr-heading">Game Modes</div>
+      <div class="instr-heading">🔍 Word Search</div>
+      <div class="instr-text">Find hidden words in a letter grid. <strong>Drag your finger</strong> (or mouse) from the first letter to the last. Words can go horizontal, vertical, diagonal — even backwards. The word bank at the top shows what you're looking for.</div>
+    </div>
+    <div class="instr-section">
+      <div class="instr-heading">City Themes</div>
+      <div class="instr-text">Word search includes city-based themes — pick a city and find landmarks, neighborhoods, and spots hidden in the grid.</div>
+    </div>
+    <div class="instr-section">
+      <div class="instr-heading">Crossword Modes</div>
       <div class="instr-text">
         🧩 <strong>Solo</strong> — Just you and the puzzle. Race the clock.<br><br>
-        🤝🏾 <strong>Co-op</strong> — Share the board in real time with a partner. One creates a room, the other joins with the code.<br><br>
-        ⚔️ <strong>Vs</strong> — Compete head-to-head on the same puzzle. Each player fills in their own letters.
+        🤝🏾 <strong>Co-op</strong> — Share a board in real time. One player creates a room, the other joins with the code.<br><br>
+        ⚔️ <strong>Vs</strong> — Head-to-head on the same puzzle. Each player fills in their own letters — most words wins.
       </div>
     </div>
     <div class="instr-section">
-      <div class="instr-heading">Puzzles</div>
-      <div class="instr-text">
-        <strong>📰 Daily</strong> puzzles are generated fresh using a word API. If the connection is slow, a built-in puzzle loads instead.<br><br>
-        <strong>👨‍👩‍👧 Family</strong> puzzles are custom-made using the Puzzle Builder. Create your own with personal words and clues.
-      </div>
-    </div>
-    <div class="instr-section">
-      <div class="instr-heading">Tips</div>
-      <div class="instr-text">Start with the clues you know. Crossing letters will help unlock harder ones. The puzzle is complete when every white cell is correctly filled.</div>
+      <div class="instr-heading">🏆 Ranked Games</div>
+      <div class="instr-text">In word search, toggle <strong>Ranked</strong> to post your time to the global leaderboard. Everyone who plays ranked can see each other's scores. Pick <strong>Casual</strong> to just vibe.</div>
     </div>
     <button class="btn-primary btn-sage" onclick="showScreen('screenLobby')" style="max-width:240px;margin:12px auto 0;display:block">Got It</button>
   </div>
@@ -406,16 +431,16 @@ body::before {
   <div class="instr-container">
     <button class="instr-back" onclick="showScreen('screenLobby')">← Back</button>
     <div class="instr-title font-display">🏆 Ranking Pool</div>
+    <div style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--ink-faint);text-align:center;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Global Leaderboard</div>
     <div class="instr-rule"></div>
     <div class="instr-section">
-      <div class="instr-heading">Crossword Best Times</div>
+      <div class="instr-heading">📰 Crossword Best Times</div>
       <div id="rankCrossword"></div>
     </div>
     <div class="instr-section">
-      <div class="instr-heading">Word Search Best Times</div>
+      <div class="instr-heading">🔍 Word Search Best Times</div>
       <div id="rankWordSearch"></div>
     </div>
-    <button class="btn-outline-sm" onclick="if(confirm('Clear all rankings?')){localStorage.removeItem('mwv_rankings');showScreen('screenRankings')}" style="margin:12px auto;display:block;color:var(--rust)">Clear Rankings</button>
   </div>
 </div>
 
@@ -491,12 +516,13 @@ body::before {
 
 <!-- SCREEN: WIN -->
 <div id="screenWin" class="screen">
-  <div class="win-ornament">🏆</div>
+  <canvas id="confettiCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999"></canvas>
+  <div class="win-ornament" id="winOrnament">🏆</div>
   <div class="win-title font-display" id="winTitle">Puzzle Complete!</div>
   <div class="win-subtitle" id="winSubtitle"></div>
   <div class="win-stats" id="winStats"></div>
   <div class="win-scores" id="winScores" style="display:none"></div>
-  <button class="btn-primary btn-gold" style="max-width:240px" onclick="backToLobby()">Play Again</button>
+  <button class="btn-primary btn-gold" style="max-width:240px" onclick="backToLobby()">Run It Back</button>
 </div>
 
 <!-- FIREBASE -->
@@ -521,12 +547,12 @@ const db = firebase.database();
 /* STATE */
 const state = {
   playerName:'', playerId:'', roomCode:'', mode:'solo',
-  gameType:'crossword', puzzleType:'random', puzzle:null, grid:[],
+  gameType:'crossword', puzzle:null, grid:[],
   selectedCell:null, direction:'across',
   clues:{across:[],down:[]}, answers:{},
-  scores:{p1:0,p2:0},
+  scores:{p1:0,p2:0}, ranked:true,
   timerStart:null, timerInterval:null, roomRef:null,
-  customPuzzles:[], gameComplete:false,
+  gameComplete:false,
 };
 
 /* ═══ EMBEDDED PUZZLES (7×7, CSP-verified) ═══ */
@@ -537,33 +563,20 @@ function getEmbeddedPuzzle() {
   return {source:'embedded', ...p};
 }
 
-/* ═══ CUSTOM PUZZLES ═══ */
-async function fetchCustomPuzzles() {
-  try {
-    const snap = await db.ref('custom_puzzles').orderByChild('created').limitToLast(20).once('value');
-    const puzzles = [];
-    snap.forEach(c => puzzles.push({id:c.key,...c.val()}));
-    state.customPuzzles = puzzles.reverse();
-    renderCustomPuzzleSelect();
-  } catch(e) { console.log('No custom puzzles:', e.message); }
-}
-function renderCustomPuzzleSelect() {
-  const sel = document.getElementById('customPuzzleSelect');
-  sel.innerHTML = state.customPuzzles.length === 0
-    ? '<option value="">No family puzzles yet — build one!</option>'
-    : '<option value="">Choose a puzzle...</option>';
-  for (const p of state.customPuzzles) {
-    const o = document.createElement('option'); o.value=p.id; o.textContent=p.title||'Untitled'; sel.appendChild(o);
-  }
-}
-
 /* ═══ UI HELPERS ═══ */
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if (id === 'screenRankings') {
-    document.getElementById('rankCrossword').innerHTML = buildRankingHTML(getRankings('crossword', null), 10);
-    document.getElementById('rankWordSearch').innerHTML = buildRankingHTML(getRankings('wordsearch', null), 10);
+    // Load from Firebase (global leaderboard)
+    document.getElementById('rankCrossword').innerHTML = '<div style="color:var(--ink-faint);font-size:0.75rem;text-align:center;padding:8px">Loading…</div>';
+    document.getElementById('rankWordSearch').innerHTML = '<div style="color:var(--ink-faint);font-size:0.75rem;text-align:center;padding:8px">Loading…</div>';
+    getFirebaseRankings('crossword').then(r => {
+      document.getElementById('rankCrossword').innerHTML = buildRankingHTML(r, 10);
+    });
+    getFirebaseRankings('wordsearch').then(r => {
+      document.getElementById('rankWordSearch').innerHTML = buildRankingHTML(r, 10);
+    });
   }
 }
 function setMode(mode, el) {
@@ -582,13 +595,6 @@ function setMode(mode, el) {
     btnPlay.style.display='none';
   }
 }
-function setPuzzleType(type, el) {
-  state.puzzleType = type;
-  document.querySelectorAll('.puzzle-btn').forEach(b => b.classList.remove('selected'));
-  if (el) el.classList.add('selected');
-  document.getElementById('customPuzzleArea').style.display = type==='custom'?'':'none';
-  if (type==='custom') fetchCustomPuzzles();
-}
 function setDirection(dir) {
   state.direction = dir;
   document.getElementById('btnAcross').classList.toggle('active', dir==='across');
@@ -596,19 +602,23 @@ function setDirection(dir) {
   if (state.selectedCell) { highlightWord(); updateActiveClue(); }
 }
 function toggleClueDrawer() { document.getElementById('clueDrawer').classList.toggle('open'); }
+function setRanked(val, el) {
+  state.ranked = val;
+  if (el) {
+    el.parentElement.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  document.getElementById('rankedHint').textContent = val
+    ? 'Your time goes on the global leaderboard'
+    : 'Just vibes — no scores saved';
+}
 
 /* ═══ GAME FLOW ═══ */
 function startGame() {
   const name = document.getElementById('inputName').value.trim();
   if (!name) { document.getElementById('inputName').focus(); return; }
   state.playerName=name; state.playerId='solo'; state.mode='solo';
-  let puzzle;
-  if (state.puzzleType==='custom') {
-    const id = document.getElementById('customPuzzleSelect').value;
-    const found = state.customPuzzles.find(p=>p.id===id);
-    puzzle = found ? {source:'custom',...found} : getEmbeddedPuzzle();
-  } else { puzzle = getEmbeddedPuzzle(); }
-  state.puzzle = puzzle;
+  state.puzzle = getEmbeddedPuzzle();
   initGame();
 }
 function createRoom() {
@@ -616,18 +626,12 @@ function createRoom() {
   if (!name) { document.getElementById('inputName').focus(); return; }
   state.playerName=name; state.playerId='p1';
   state.roomCode = genRoomCode();
-  let puzzle;
-  if (state.puzzleType==='custom') {
-    const id = document.getElementById('customPuzzleSelect').value;
-    const found = state.customPuzzles.find(p=>p.id===id);
-    puzzle = found ? {source:'custom',...found} : getEmbeddedPuzzle();
-  } else { puzzle = getEmbeddedPuzzle(); }
-  state.puzzle = puzzle;
+  state.puzzle = getEmbeddedPuzzle();
   const ref = db.ref('rooms/'+state.roomCode);
   state.roomRef = ref;
   ref.set({
     p1:{name:state.playerName,connected:true}, p2:{name:'',connected:false},
-    mode:state.mode, puzzle, cells:{}, scores:{p1:0,p2:0}, cursors:{},
+    mode:state.mode, puzzle:state.puzzle, cells:{}, scores:{p1:0,p2:0}, cursors:{},
     status:'waiting', timerStart:null,
     created:firebase.database.ServerValue.TIMESTAMP
   });
@@ -1035,10 +1039,12 @@ function showWinScreen() {
     saveScore('crossword', puzzleTitle, state.playerName, elapsed, tw);
     document.getElementById('winTitle').textContent=`Nice work, ${state.playerName}!`;
     document.getElementById('winSubtitle').textContent=puzzleTitle;
-    const rankings = getRankings('crossword', null);
     document.getElementById('winStats').innerHTML=`<div style="text-align:center"><div class="win-stat-val">${ts}</div><div class="win-stat-label">Time</div></div><div style="text-align:center"><div class="win-stat-val">${tw}</div><div class="win-stat-label">Words</div></div>`;
     document.getElementById('winScores').style.display='block';
-    document.getElementById('winScores').innerHTML=`<div style="text-align:left;width:100%;max-width:320px;margin:0 auto"><div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold-dim);margin-bottom:4px">🏆 Ranking Pool</div>${buildRankingHTML(rankings,5)}</div>`;
+    document.getElementById('winScores').innerHTML='<div style="text-align:center;color:var(--ink-faint);font-size:0.75rem;padding:8px">Loading rankings…</div>';
+    getFirebaseRankings('crossword').then(rankings => {
+      document.getElementById('winScores').innerHTML=`<div style="text-align:left;width:100%;max-width:320px;margin:0 auto"><div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold-dim);margin-bottom:4px">🏆 Ranking Pool</div>${buildRankingHTML(rankings,5)}</div>`;
+    });
   } else if (state.mode==='collaborative') {
     document.getElementById('winTitle').textContent='You solved it together! 🤝🏾';
     document.getElementById('winSubtitle').textContent=puzzleTitle;
@@ -1052,6 +1058,7 @@ function showWinScreen() {
     document.getElementById('winScores').style.display='flex';
     document.getElementById('winScores').innerHTML=`<div style="text-align:center"><div class="win-stat-val">${p1}</div><div class="win-stat-label">P1</div></div><div style="text-align:center"><div class="win-stat-val">${p2}</div><div class="win-stat-label">P2</div></div>`;
   }
+  triggerWinCelebration();
   showScreen('screenWin');
 }
 
@@ -1112,14 +1119,18 @@ document.getElementById('osk').addEventListener('click', handleOSKPress);
 /* ═══════════════════════════════════════════════ */
 
 const WS_THEMES = [
+  { name: "🏛️ Washington DC", words: ["MONUMENT","CAPITOL","MALL","DUPONT","FOGGY","ANACOSTIA","POTOMAC","WHARF","ADAMS","SHAW"] },
+  { name: "🦀 Baltimore", words: ["HARBOR","CAMDEN","FELLS","HOMEWOOD","DRUID","HAMPDEN","FEDERAL","CANTON","PIGTOWN","LOCUST"] },
+  { name: "🔔 Philadelphia", words: ["LIBERTY","RITTENHOUSE","FISHTOWN","BROAD","MANAYUNK","TEMPLE","MARKET","ROCKY","LOGAN","WISTER"] },
+  { name: "🤠 Austin", words: ["CONGRESS","ZILKER","BARTON","LAMAR","MANOR","DOMAIN","RAINEY","MUELLER","BOULDIN","SIXTH"] },
+  { name: "🎷 Harlem", words: ["APOLLO","LENOX","STRIVERS","MORNINGSIDE","MARCUS","SYLVIA","RUCKER","SCHOMBURG","MALCOLM","CONVENT"] },
+  { name: "🇲🇽 CDMX", words: ["ZOCALO","REFORMA","CONDESA","POLANCO","COYOACAN","CHAPULTEPEC","FRIDA","ROMA","XOCHIMILCO","ALAMEDA"] },
   { name: "🐾 Animals", words: ["TIGER","EAGLE","WHALE","HORSE","SNAKE","DOLPHIN","RABBIT","FALCON","PANDA","SHARK"] },
   { name: "🍕 Food & Drink", words: ["PASTA","MANGO","BREAD","JUICE","SALAD","CHEESE","COFFEE","PEPPER","OLIVE","STEAK"] },
-  { name: "✈️ Travel", words: ["BEACH","HOTEL","PARIS","TRAIN","ISLAND","TEMPLE","SAFARI","CRUISE","LONDON","HIKING"] },
   { name: "🎵 Music", words: ["PIANO","DRUMS","BLUES","GUITAR","MELODY","RHYTHM","SINGER","CHORUS","TEMPO","VINYL"] },
   { name: "⚽ Sports", words: ["SOCCER","TENNIS","RUGBY","BOXING","SPRINT","HOCKEY","DIVING","GOLF","RELAY","TRACK"] },
   { name: "🌿 Nature", words: ["RIVER","OCEAN","STORM","FOREST","MEADOW","CANYON","SUNSET","BREEZE","CORAL","BLOOM"] },
   { name: "🔬 Science", words: ["ATOMS","ORBIT","SOLAR","LIGHT","GRAVITY","ENERGY","PLASMA","GENOME","QUARK","LASER"] },
-  { name: "🎬 Movies", words: ["SCENE","ACTOR","DRAMA","COMEDY","SCRIPT","SEQUEL","STUDIO","HORROR","HEIST","AWARD"] },
 ];
 
 // Populate theme selector
@@ -1212,7 +1223,10 @@ function startWordSearch() {
   ws.words = theme.words.map(w=>w.toUpperCase());
   ws.found = new Set();
   ws.foundLines = [];
-  ws.rows = 10; ws.cols = 10;
+  // Dynamic grid size: need at least max-word-length, min 10
+  const maxLen = Math.max(...ws.words.map(w=>w.length));
+  const gridSize = Math.max(10, maxLen + 2);
+  ws.rows = gridSize; ws.cols = gridSize;
 
   const result = generateWordSearch(ws.words, ws.rows, ws.cols);
   ws.grid = result.grid;
@@ -1230,7 +1244,7 @@ function startWordSearch() {
     bank.appendChild(span);
   });
 
-  document.getElementById('wsHudTitle').textContent = theme.name;
+  document.getElementById('wsHudTitle').textContent = theme.name + (state.ranked ? ' 🏆' : '');
   const totalWords = ws.placed.length;
   document.getElementById('wsHudScore').textContent = `0/${totalWords}`;
 
@@ -1420,10 +1434,23 @@ function showWSWin() {
   saveScore('wordsearch', themeName, state.playerName, elapsed, ws.placed.length);
   document.getElementById('winTitle').textContent=`Nice work, ${state.playerName}!`;
   document.getElementById('winSubtitle').textContent=themeName;
-  const rankings = getRankings('wordsearch', null);
   document.getElementById('winStats').innerHTML=`<div style="text-align:center"><div class="win-stat-val">${ts}</div><div class="win-stat-label">Time</div></div><div style="text-align:center"><div class="win-stat-val">${ws.placed.length}</div><div class="win-stat-label">Words</div></div>`;
-  document.getElementById('winScores').style.display='block';
-  document.getElementById('winScores').innerHTML=`<div style="text-align:left;width:100%;max-width:320px;margin:0 auto"><div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold-dim);margin-bottom:4px">🏆 Ranking Pool</div>${buildRankingHTML(rankings,5)}</div>`;
+  if (state.ranked) {
+    document.getElementById('winScores').style.display='block';
+    document.getElementById('winScores').innerHTML='<div style="text-align:center;color:var(--ink-faint);font-size:0.75rem;padding:8px">Loading rankings…</div>';
+    getFirebaseRankings('wordsearch').then(rankings => {
+      // Find player's rank
+      const rank = rankings.findIndex(r => r.player === state.playerName && r.time === elapsed) + 1;
+      let rankMsg = '';
+      if (rank === 1) rankMsg = '<div style="text-align:center;font-size:1.1rem;font-weight:700;color:var(--gold-dim);margin-bottom:6px">👑 NEW #1 — YOU\'RE ON TOP!</div>';
+      else if (rank > 0 && rank <= 3) rankMsg = `<div style="text-align:center;font-size:0.9rem;font-weight:600;color:var(--gold-dim);margin-bottom:6px">🔥 You placed #${rank}!</div>`;
+      else if (rank > 0) rankMsg = `<div style="text-align:center;font-size:0.8rem;color:var(--ink-faint);margin-bottom:6px">You placed #${rank}</div>`;
+      document.getElementById('winScores').innerHTML=`<div style="text-align:left;width:100%;max-width:320px;margin:0 auto">${rankMsg}<div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold-dim);margin-bottom:4px">🏆 Ranking Pool</div>${buildRankingHTML(rankings,5)}</div>`;
+    });
+  } else {
+    document.getElementById('winScores').style.display='none';
+  }
+  triggerWinCelebration();
   showScreen('screenWin');
 }
 
@@ -1433,10 +1460,11 @@ function exitWordSearch() {
 }
 
 /* ═══════════════════════════════════════════════ */
-/*  RANKING POOL — Leaderboard                     */
+/*  RANKING POOL — Firebase Leaderboard             */
 /* ═══════════════════════════════════════════════ */
 
 function saveScore(gameType, puzzleTitle, playerName, timeSeconds, wordCount) {
+  // Always save locally
   try {
     const key = 'mwv_rankings';
     const raw = localStorage.getItem(key);
@@ -1446,23 +1474,44 @@ function saveScore(gameType, puzzleTitle, playerName, timeSeconds, wordCount) {
       time: timeSeconds, words: wordCount,
       date: new Date().toISOString().split('T')[0]
     });
-    // Keep top 50 entries
     rankings.sort((a,b) => a.time - b.time);
     if (rankings.length > 50) rankings.length = 50;
     localStorage.setItem(key, JSON.stringify(rankings));
   } catch(e) {}
+
+  // If ranked, also save to Firebase
+  if (state.ranked) {
+    try {
+      db.ref('rankings').push({
+        gameType, puzzle: puzzleTitle, player: playerName,
+        time: timeSeconds, words: wordCount,
+        date: new Date().toISOString().split('T')[0],
+        ts: firebase.database.ServerValue.TIMESTAMP
+      });
+    } catch(e) { console.log('Firebase ranking save failed:', e); }
+  }
 }
 
-function getRankings(gameType, puzzleTitle) {
+async function getFirebaseRankings(gameType) {
+  try {
+    const snap = await db.ref('rankings')
+      .orderByChild('time')
+      .limitToFirst(20)
+      .once('value');
+    const results = [];
+    snap.forEach(c => {
+      const r = c.val();
+      if (!gameType || r.gameType === gameType) results.push(r);
+    });
+    return results.sort((a,b) => a.time - b.time);
+  } catch(e) { return []; }
+}
+
+function getLocalRankings(gameType) {
   try {
     const raw = localStorage.getItem('mwv_rankings');
     if (!raw) return [];
-    const all = JSON.parse(raw);
-    return all.filter(r => {
-      if (gameType && r.gameType !== gameType) return false;
-      if (puzzleTitle && r.puzzle !== puzzleTitle) return false;
-      return true;
-    }).sort((a,b) => a.time - b.time);
+    return JSON.parse(raw).filter(r => !gameType || r.gameType === gameType).sort((a,b) => a.time - b.time);
   } catch(e) { return []; }
 }
 
@@ -1474,15 +1523,121 @@ function buildRankingHTML(rankings, limit) {
   top.forEach((r, i) => {
     const ts = `${Math.floor(r.time/60)}:${(r.time%60).toString().padStart(2,'0')}`;
     const medal = medals[i] || `#${i+1}`;
-    html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:var(--paper-warm);border-radius:6px">`;
+    html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--paper-warm);border-radius:6px">`;
     html += `<span style="font-size:0.9rem;width:24px;text-align:center">${medal}</span>`;
     html += `<span style="flex:1;font-size:0.8rem;font-weight:600">${r.player}</span>`;
     html += `<span style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--gold-dim)">${ts}</span>`;
-    html += `<span style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--ink-faint)">${r.date}</span>`;
+    html += `<span style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--ink-faint)">${r.date||''}</span>`;
     html += `</div>`;
   });
   html += '</div>';
   return html;
+}
+
+/* ═══════════════════════════════════════════════ */
+/*  WIN CELEBRATION — Confetti + Effects             */
+/* ═══════════════════════════════════════════════ */
+
+function triggerWinCelebration() {
+  // Flash the screen gold briefly
+  const flash = document.createElement('div');
+  flash.style.cssText = 'position:fixed;inset:0;background:var(--gold-light);z-index:998;pointer-events:none;opacity:0.7;transition:opacity 0.5s';
+  document.body.appendChild(flash);
+  requestAnimationFrame(() => { flash.style.opacity = '0'; });
+  setTimeout(() => flash.remove(), 600);
+
+  // Animate ornament
+  const orn = document.getElementById('winOrnament');
+  orn.style.animation = 'none';
+  void orn.offsetWidth;
+  orn.style.animation = 'trophy-bounce 0.6s ease-out, trophy-glow 2s ease-in-out infinite 0.6s';
+  
+  // Launch confetti — two waves
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  
+  const colors = ['#C4943E','#8B6914','#A67C2E','#D4A74A','#6B8F71','#4A7050','#E8D5B7','#B85450','#5B8CB8','#9B6FA8','#FFD700','#FF6347'];
+  const confetti = [];
+  
+  // Wave 1: burst from center
+  for (let i = 0; i < 80; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 3 + Math.random() * 6;
+    confetti.push({
+      x: canvas.width / 2, y: canvas.height * 0.3,
+      w: 4 + Math.random() * 6, h: 8 + Math.random() * 12,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 3,
+      rotation: Math.random() * 360,
+      rotSpeed: (Math.random() - 0.5) * 15,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.03 + Math.random() * 0.05,
+    });
+  }
+  // Wave 2: rain from top
+  for (let i = 0; i < 60; i++) {
+    confetti.push({
+      x: Math.random() * canvas.width, y: -20 - Math.random() * 300,
+      w: 4 + Math.random() * 6, h: 8 + Math.random() * 12,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 3, vy: 2 + Math.random() * 3,
+      rotation: Math.random() * 360,
+      rotSpeed: (Math.random() - 0.5) * 12,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.03 + Math.random() * 0.05,
+    });
+  }
+  
+  let frame = 0;
+  const maxFrames = 240; // ~4 seconds at 60fps
+  
+  function drawConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const alpha = frame > maxFrames - 50 ? (maxFrames - frame) / 50 : 1;
+    ctx.globalAlpha = alpha;
+    
+    for (const p of confetti) {
+      p.x += p.vx + Math.sin(p.wobble) * 0.5;
+      p.y += p.vy;
+      p.vy += 0.06; // gravity
+      p.vx *= 0.99; // air resistance
+      p.rotation += p.rotSpeed;
+      p.wobble += p.wobbleSpeed;
+      
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation * Math.PI / 180);
+      
+      // Mix of rectangles and circles
+      ctx.fillStyle = p.color;
+      if (p.w > 6) {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      }
+      ctx.restore();
+    }
+    
+    ctx.globalAlpha = 1;
+    frame++;
+    if (frame < maxFrames) {
+      requestAnimationFrame(drawConfetti);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+  
+  requestAnimationFrame(drawConfetti);
+  
+  // Title reveal animation
+  const title = document.getElementById('winTitle');
+  title.style.animation = 'none';
+  void title.offsetWidth;
+  title.style.animation = 'win-reveal 0.8s ease-out';
 }
 
 // Save state when page loses focus (user switches apps on mobile)
